@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { type SectorId, SECTORS } from '../../types/universe';
 import { UniverseCanvas } from './UniverseCanvas';
-import { UniverseHUD } from '../hud/UniverseHUD';
-import { NavigationDock } from '../hud/NavigationDock';
+import { UniverseNav } from '../navigation/UniverseNav';
 import { HeroStage } from '../stages/HeroStage';
 import { AboutStage } from '../stages/AboutStage';
 import { SkillsStage } from '../stages/SkillsStage';
@@ -17,18 +16,16 @@ export const UniverseExperience: React.FC = () => {
   const [activeSectorId, setActiveSectorId] = useState<SectorId>('core');
   const [selectedSkillDomain, setSelectedSkillDomain] = useState<string | null>('backend');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [coordinates, setCoordinates] = useState<[number, number, number]>([0, 1.2, 7.5]);
   const [reducedMotion, setReducedMotion] = useState(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
     return false;
   });
-  const [isOverviewMode, setIsOverviewMode] = useState(false);
 
   const wheelThrottleRef = useRef(false);
 
-  // Listen to external preference changes for reduced motion
+  // Listen to system preference changes for reduced motion
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -57,49 +54,57 @@ export const UniverseExperience: React.FC = () => {
 
   // Navigate to a sector and update URL hash
   const navigateToSector = useCallback((sectorId: SectorId) => {
+    // If navigating away from projects, clear selected project
+    if (sectorId !== 'projects') {
+      setSelectedProjectId(null);
+    }
     setActiveSectorId(sectorId);
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', `#${sectorId}`);
     }
   }, []);
 
-  // Scroll / Wheel navigation through the 3D spatial journey
+  // Continuous Cinematic Wheel Travel through the 7 Destinations
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // If project modal is open or target is scrollable and not at boundary, don't hijack
+      // If project dossier is open, allow internal reading/scrolling
       if (selectedProjectId) return;
 
+      // Allow scrolling inside an open spatial-card if not at the scroll boundaries
       const target = e.target as HTMLElement;
-      const isInsideScrollable = target.closest('.stage-viewport');
-      if (isInsideScrollable) {
-        const viewport = isInsideScrollable as HTMLElement;
-        const isAtTop = viewport.scrollTop <= 0 && e.deltaY < 0;
-        const isAtBottom =
-          viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 2 && e.deltaY > 0;
+      const card = target.closest('.spatial-card, .dossier-drawer');
+      if (card) {
+        const el = card as HTMLElement;
+        const isAtTop = el.scrollTop <= 0 && e.deltaY < 0;
+        const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2 && e.deltaY > 0;
         if (!isAtTop && !isAtBottom) {
-          return; // Let user scroll inside the content panel
+          return;
         }
       }
 
       if (wheelThrottleRef.current) return;
-      if (Math.abs(e.deltaY) < 30) return; // Ignore micro jitter
+      if (Math.abs(e.deltaY) < 35) return; // Ignore micro jitter
 
       wheelThrottleRef.current = true;
       setTimeout(() => {
         wheelThrottleRef.current = false;
-      }, 950);
+      }, 750);
 
       const currentIdx = SECTORS.findIndex((s) => s.id === activeSectorId);
       if (e.deltaY > 0) {
-        // Scroll down -> Next sector
-        const nextIdx = (currentIdx + 1) % SECTORS.length;
-        sound.playWarp();
-        navigateToSector(SECTORS[nextIdx].id);
+        // Scroll down -> Next destination
+        const nextIdx = Math.min(currentIdx + 1, SECTORS.length - 1);
+        if (nextIdx !== currentIdx) {
+          sound.playWarp();
+          navigateToSector(SECTORS[nextIdx].id);
+        }
       } else {
-        // Scroll up -> Previous sector
-        const prevIdx = (currentIdx - 1 + SECTORS.length) % SECTORS.length;
-        sound.playWarp();
-        navigateToSector(SECTORS[prevIdx].id);
+        // Scroll up -> Previous destination
+        const prevIdx = Math.max(currentIdx - 1, 0);
+        if (prevIdx !== currentIdx) {
+          sound.playWarp();
+          navigateToSector(SECTORS[prevIdx].id);
+        }
       }
     };
 
@@ -107,11 +112,60 @@ export const UniverseExperience: React.FC = () => {
     return () => window.removeEventListener('wheel', handleWheel);
   }, [activeSectorId, selectedProjectId, navigateToSector]);
 
+  // Keyboard navigation (Arrow keys, PageUp/PageDown, Home/End)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (selectedProjectId) return;
+
+      const currentIdx = SECTORS.findIndex((s) => s.id === activeSectorId);
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'j') {
+        e.preventDefault();
+        const nextIdx = Math.min(currentIdx + 1, SECTORS.length - 1);
+        if (nextIdx !== currentIdx) {
+          sound.playWarp();
+          navigateToSector(SECTORS[nextIdx].id);
+        }
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'k') {
+        e.preventDefault();
+        const prevIdx = Math.max(currentIdx - 1, 0);
+        if (prevIdx !== currentIdx) {
+          sound.playWarp();
+          navigateToSector(SECTORS[prevIdx].id);
+        }
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        sound.playWarp();
+        navigateToSector('core');
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        sound.playWarp();
+        navigateToSector('contact');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeSectorId, selectedProjectId, navigateToSector]);
+
   return (
-    <div className="universe-experience-root" style={{ width: '100%', height: '100%', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <div
+      className="universe-experience-root"
+      style={{
+        width: '100%',
+        height: '100%',
+        minHeight: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#07080b',
+      }}
+    >
       {/* Accessible skip link */}
       <a href="#active-stage" className="skip-to-content">
-        Skip to sector content
+        Skip to main content
       </a>
 
       {/* 3D WebGL Canvas Layer */}
@@ -121,19 +175,21 @@ export const UniverseExperience: React.FC = () => {
         selectedSkillDomain={selectedSkillDomain}
         onSelectSkillDomain={setSelectedSkillDomain}
         selectedProjectId={selectedProjectId}
-        onSelectProject={(id) => setSelectedProjectId(id)}
-        onCoordinatesUpdate={setCoordinates}
+        onSelectProject={(id) => {
+          setSelectedProjectId(id);
+          // Ensure we are in projects destination
+          if (activeSectorId !== 'projects') {
+            navigateToSector('projects');
+          }
+        }}
       />
 
-      {/* Futuristic Persistent Top HUD */}
-      <UniverseHUD
+      {/* Minimal Luxury Navigation Header */}
+      <UniverseNav
         activeSectorId={activeSectorId}
         onNavigateSector={navigateToSector}
-        coordinates={coordinates}
         reducedMotion={reducedMotion}
         onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
-        isOverviewMode={isOverviewMode}
-        onToggleOverviewMode={() => setIsOverviewMode(!isOverviewMode)}
       />
 
       {/* Spatially Composed Semantic Stage Overlays */}
@@ -177,19 +233,13 @@ export const UniverseExperience: React.FC = () => {
         </div>
       </main>
 
-      {/* Detailed Project Dossier Modal when exhibit is inspected */}
+      {/* Project Detail Dossier Drawer when inspecting a 3D Installation */}
       {selectedProjectId && (
         <ProjectDossierModal
           projectId={selectedProjectId}
           onClose={() => setSelectedProjectId(null)}
         />
       )}
-
-      {/* Bottom Waypoint Dock & Controller */}
-      <NavigationDock
-        activeSectorId={activeSectorId}
-        onNavigateSector={navigateToSector}
-      />
     </div>
   );
 };

@@ -10,30 +10,70 @@ interface SectorSkillsProps {
   onSelectDomain: (id: string) => void;
 }
 
-export function SectorSkills({ isActive: _isActive, selectedDomain, onSelectDomain }: SectorSkillsProps) {
+export function SectorSkills({
+  isActive: _isActive,
+  selectedDomain,
+  onSelectDomain,
+}: SectorSkillsProps) {
   const groupRef = useRef<THREE.Group>(null);
   const packetsRef = useRef<THREE.Points>(null);
 
-  // Network connection lines between related skill nodes
+  // Position relative to Sector center [0, 22, -6]
+  const clusterNodes: (SkillDomainNode & { relPos: [number, number, number] })[] = useMemo(() => [
+    {
+      ...SKILL_DOMAINS[0], // backend
+      relPos: [0, 0.4, 0],
+    },
+    {
+      ...SKILL_DOMAINS[1], // languages
+      relPos: [-3.4, 1.6, 0.8],
+    },
+    {
+      ...SKILL_DOMAINS[2], // databases
+      relPos: [3.4, 1.4, -0.6],
+    },
+    {
+      ...SKILL_DOMAINS[3], // automation
+      relPos: [-2.6, -1.6, -1.0],
+    },
+    {
+      ...SKILL_DOMAINS[4], // ai
+      relPos: [-4.2, 0.2, -1.2],
+    },
+    {
+      ...SKILL_DOMAINS[5], // devops
+      relPos: [2.8, -1.5, 1.0],
+    },
+    {
+      ...SKILL_DOMAINS[6], // frontend
+      relPos: [4.4, 0.2, 1.2],
+    },
+    {
+      ...SKILL_DOMAINS[7], // integrations
+      relPos: [1.2, -2.2, -1.6],
+    },
+  ], []);
+
+  // Compute connections between relative positions
   const { lineGeometry, pairs } = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const positions: number[] = [];
-    const nodeMap = new Map<string, SkillDomainNode>();
-    SKILL_DOMAINS.forEach((d) => nodeMap.set(d.id, d));
+    const nodeMap = new Map<string, typeof clusterNodes[0]>();
+    clusterNodes.forEach((n) => nodeMap.set(n.id, n));
 
-    const connPairs: [SkillDomainNode, SkillDomainNode][] = [];
-    const addedPairs = new Set<string>();
+    const connPairs: [typeof clusterNodes[0], typeof clusterNodes[0]][] = [];
+    const added = new Set<string>();
 
-    SKILL_DOMAINS.forEach((node) => {
-      node.connections.forEach((targetId) => {
-        const target = nodeMap.get(targetId);
+    clusterNodes.forEach((node) => {
+      node.connections.forEach((tId) => {
+        const target = nodeMap.get(tId);
         if (target) {
           const key = [node.id, target.id].sort().join('--');
-          if (!addedPairs.has(key)) {
-            addedPairs.add(key);
+          if (!added.has(key)) {
+            added.add(key);
             connPairs.push([node, target]);
-            positions.push(...node.position);
-            positions.push(...target.position);
+            positions.push(...node.relPos);
+            positions.push(...target.relPos);
           }
         }
       });
@@ -41,10 +81,9 @@ export function SectorSkills({ isActive: _isActive, selectedDomain, onSelectDoma
 
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return { lineGeometry: geo, pairs: connPairs };
-  }, []);
+  }, [clusterNodes]);
 
-  // Traveling pulses along network lines
-  const pulseCount = 24;
+  const pulseCount = 32;
   const pulsePositions = useMemo(() => new Float32Array(pulseCount * 3), []);
 
   useFrame((state) => {
@@ -52,7 +91,7 @@ export function SectorSkills({ isActive: _isActive, selectedDomain, onSelectDoma
 
     if (groupRef.current) {
       // Gentle orbital wobble
-      groupRef.current.rotation.y = Math.sin(t * 0.25) * 0.08;
+      groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.06;
     }
 
     if (packetsRef.current && pairs.length > 0) {
@@ -62,28 +101,25 @@ export function SectorSkills({ isActive: _isActive, selectedDomain, onSelectDoma
       for (let i = 0; i < pulseCount; i++) {
         const pairIdx = i % pairs.length;
         const [fromNode, toNode] = pairs[pairIdx];
-        const progress = (t * 0.7 + i * (1 / pulseCount)) % 1;
+        const progress = (t * 0.75 + i * (1 / pulseCount)) % 1;
 
-        arr[i * 3] = THREE.MathUtils.lerp(fromNode.position[0], toNode.position[0], progress);
-        arr[i * 3 + 1] = THREE.MathUtils.lerp(fromNode.position[1], toNode.position[1], progress);
-        arr[i * 3 + 2] = THREE.MathUtils.lerp(fromNode.position[2], toNode.position[2], progress);
+        arr[i * 3] = THREE.MathUtils.lerp(fromNode.relPos[0], toNode.relPos[0], progress);
+        arr[i * 3 + 1] = THREE.MathUtils.lerp(fromNode.relPos[1], toNode.relPos[1], progress);
+        arr[i * 3 + 2] = THREE.MathUtils.lerp(fromNode.relPos[2], toNode.relPos[2], progress);
       }
+
       attr.needsUpdate = true;
     }
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position={[0, 22, -6]}>
       {/* Network Connection Lines */}
       <lineSegments geometry={lineGeometry}>
-        <lineBasicMaterial
-          color="#38bdf8"
-          transparent
-          opacity={0.35}
-        />
+        <lineBasicMaterial color="#38bdf8" transparent opacity={0.35} />
       </lineSegments>
 
-      {/* Network Data Pulses */}
+      {/* Traveling Network Pulses */}
       <points ref={packetsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -92,64 +128,73 @@ export function SectorSkills({ isActive: _isActive, selectedDomain, onSelectDoma
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.16}
+          size={0.12}
           color="#dfc070"
           transparent
-          opacity={0.9}
+          opacity={0.85}
           blending={THREE.AdditiveBlending}
         />
       </points>
 
-      {/* Interactive System Domain Nodes */}
-      {SKILL_DOMAINS.map((domain) => {
-        const isSelected = selectedDomain === domain.id;
-        const isConnected = selectedDomain
-          ? domain.id === selectedDomain ||
-            domain.connections.includes(selectedDomain) ||
-            SKILL_DOMAINS.find((d) => d.id === selectedDomain)?.connections.includes(domain.id)
-          : true;
+      {/* Interactive Skill Domain Cluster Hubs */}
+      {clusterNodes.map((node) => {
+        const isSelected = selectedDomain === node.id;
+        const isBackend = node.id === 'backend';
 
         return (
           <group
-            key={domain.id}
-            position={domain.position}
+            key={node.id}
+            position={node.relPos}
             onClick={(e) => {
               e.stopPropagation();
               sound.playClick();
-              onSelectDomain(domain.id);
+              onSelectDomain(node.id);
             }}
           >
-            {/* Core Node Polyhedron */}
-            <mesh scale={isSelected ? 1.4 : 1.0}>
-              <octahedronGeometry args={[0.38, 0]} />
+            {/* Main Polyhedral Hub */}
+            <mesh scale={isSelected ? 1.35 : 1.0}>
+              {isBackend ? (
+                <octahedronGeometry args={[0.55, 0]} />
+              ) : (
+                <dodecahedronGeometry args={[0.42, 0]} />
+              )}
               <meshStandardMaterial
-                color={isSelected ? '#dfc070' : domain.color}
-                emissive={isSelected ? '#c5a059' : domain.color}
-                emissiveIntensity={isSelected ? 0.9 : isConnected ? 0.4 : 0.15}
-                roughness={0.25}
-                metalness={0.8}
+                color={isSelected ? '#dfc070' : node.color}
+                emissive={isSelected ? '#dfc070' : node.color}
+                emissiveIntensity={isSelected ? 0.8 : 0.25}
+                metalness={0.85}
+                roughness={0.2}
               />
             </mesh>
 
-            {/* Orbiting Ring Indicator */}
-            <mesh rotation={[Math.PI / 3, 0, 0]}>
-              <torusGeometry args={[0.62, 0.015, 8, 32]} />
-              <meshBasicMaterial
-                color={isSelected ? '#ffffff' : domain.color}
-                transparent
-                opacity={isSelected ? 0.9 : 0.4}
-              />
-            </mesh>
+            {/* Orbital Rings around selected or core hub */}
+            {(isSelected || isBackend) && (
+              <mesh rotation={[Math.PI / 3, 0, 0]}>
+                <torusGeometry args={[0.75, 0.02, 16, 32]} />
+                <meshBasicMaterial color={isSelected ? '#dfc070' : '#38bdf8'} />
+              </mesh>
+            )}
 
-            {/* Vertical Anchor Laser */}
-            <mesh position={[0, -0.6, 0]}>
-              <cylinderGeometry args={[0.01, 0.01, 1.2, 4]} />
-              <meshBasicMaterial
-                color={domain.color}
-                transparent
-                opacity={0.3}
-              />
-            </mesh>
+            {/* Satellite Node Orbiters */}
+            {[
+              [0.6, 0.3, 0],
+              [-0.5, -0.4, 0.3],
+              [0.2, 0.6, -0.4],
+            ].map(([sx, sy, sz], sIdx) => (
+              <mesh key={sIdx} position={[sx, sy, sz]} scale={isSelected ? 1.2 : 0.8}>
+                <sphereGeometry args={[0.07, 12, 12]} />
+                <meshStandardMaterial
+                  color={isSelected ? '#dfc070' : '#38bdf8'}
+                  emissive={isSelected ? '#dfc070' : '#0284c7'}
+                  emissiveIntensity={0.5}
+                />
+              </mesh>
+            ))}
+
+            {/* Subtle Point Light for active domain */}
+            {isSelected && (
+              <pointLight color="#dfc070" intensity={2.5} distance={5} />
+            )}
           </group>
         );
       })}

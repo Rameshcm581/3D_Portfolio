@@ -71,13 +71,13 @@ export function UniverseCanvas({
         }
       >
         <Canvas
-          camera={{ position: [0, 1.2, 7.5], fov: 48, near: 0.1, far: 250 }}
+          camera={{ position: [0, 0, 7.2], fov: 48, near: 0.1, far: 250 }}
           dpr={[1, typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1]}
           gl={{
             antialias: true,
             powerPreference: 'high-performance',
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.15,
+            toneMappingExposure: 1.2,
           }}
           style={{ width: '100%', height: '100%' }}
         >
@@ -90,14 +90,15 @@ export function UniverseCanvas({
           {/* Infinite Celestial Dust & Starfield */}
           <DeepSpaceBackground particleCount={1000} />
 
-          {/* Camera Controller & Organic Parallax */}
+          {/* Camera Controller with Project Zoom-In & Organic Parallax */}
           <CameraRig
             activeSectorId={activeSectorId}
+            selectedProjectId={selectedProjectId}
             reducedMotion={reducedMotion}
             onCoordinatesUpdate={onCoordinatesUpdate}
           />
 
-          {/* Spatially Positioned 3D Sectors */}
+          {/* Spatially Positioned 3D Environments */}
           <Suspense fallback={null}>
             <SectorCore isActive={activeSectorId === 'core'} />
             <SectorAbout isActive={activeSectorId === 'about'} />

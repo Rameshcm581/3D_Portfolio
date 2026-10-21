@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowRight, Cpu, Layers } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Cpu } from 'lucide-react';
 import { SKILL_DOMAINS } from '../../data/universeData';
+import { portfolioData, type SkillCategory } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
 import { sound } from '../universe/SoundSystem';
 import './Stages.css';
@@ -16,108 +17,97 @@ export const SkillsStage: React.FC<SkillsStageProps> = ({
   onSelectDomain,
   onNavigateSector,
 }) => {
-  const activeNode = SKILL_DOMAINS.find((d) => d.id === selectedDomain) || SKILL_DOMAINS[0];
+  const activeDomain = SKILL_DOMAINS.find((d) => d.id === selectedDomain) || SKILL_DOMAINS[0];
+
+  // Look up matching skill category in portfolioData if present
+  const matchingCategory = portfolioData.skillCategories.find(
+    (c: SkillCategory) => c.id === activeDomain.id || c.title.toLowerCase().includes(activeDomain.id)
+  );
 
   return (
-    <section className="stage-card" aria-labelledby="skills-heading">
-      <div className="stage-eyebrow stage-eyebrow-cyan">
-        <Cpu size={14} />
-        <span>SECTOR 03 // ENGINEERING SYSTEMS TOPOLOGY</span>
-      </div>
-
-      <h2 id="skills-heading" className="stage-heading" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}>
-        Interconnected <span className="stage-heading-accent">Technical Infrastructure.</span>
-      </h2>
-
-      <p className="stage-lead" style={{ marginBottom: '1.5rem' }}>
-        Select a technical subsystem below or in the 3D network to inspect verified tools, architecture conduits, and framework dependencies.
-      </p>
-
-      {/* Domain Selection Tabs (Connected to 3D Nodes) */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          marginBottom: '1.75rem',
-        }}
-        role="tablist"
-        aria-label="Skill Domain Selector"
-      >
+    <div className="skills-stage-container">
+      {/* Top Category Filter Selector */}
+      <div className="skills-top-bar" role="tablist" aria-label="Technology Clusters">
         {SKILL_DOMAINS.map((domain) => {
-          const isSelected = domain.id === activeNode.id;
+          const isSelected = domain.id === activeDomain.id;
           return (
             <button
               key={domain.id}
               role="tab"
               aria-selected={isSelected}
-              className={`hud-control-btn ${isSelected ? 'active' : ''}`}
-              style={{
-                borderColor: isSelected ? 'var(--accent-gold)' : undefined,
-                background: isSelected ? 'rgba(207, 168, 81, 0.18)' : undefined,
-                color: isSelected ? 'var(--accent-gold-light)' : undefined,
-                padding: '0.5rem 0.9rem',
-                fontSize: '0.78rem',
-              }}
+              className={`skill-domain-tab ${isSelected ? 'active' : ''}`}
               onClick={() => {
                 sound.playClick();
                 onSelectDomain(domain.id);
               }}
             >
-              <span>{domain.title}</span>
+              {domain.title}
             </button>
           );
         })}
       </div>
 
-      {/* Selected Domain Deep Dive Card */}
-      <div
-        style={{
-          background: 'rgba(18, 22, 32, 0.75)',
-          border: '1px solid rgba(207, 168, 81, 0.3)',
-          borderRadius: '14px',
-          padding: '1.75rem',
-          marginBottom: '1.75rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-cyan)' }}>
-              ACTIVE NODE
-            </span>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {activeNode.title}
-            </h3>
+      {/* Floating Cluster Inspector Detail Panel */}
+      <section className="skills-detail-floating" aria-labelledby="skills-domain-title">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          <div className="spatial-eyebrow">
+            <Cpu size={14} />
+            <span>TECHNOLOGY NETWORK CLUSTER</span>
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            CONNECTED CONDUITS: {activeNode.connections.join(' · ').toUpperCase()}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>
+            INTERACTIVE 3D NODES
           </span>
         </div>
 
-        {/* Tech list */}
-        <div className="tech-pills-list">
-          {activeNode.techs.map((tech, idx) => (
-            <span key={tech} className={`tech-pill ${idx === 0 ? 'gold' : 'cyan'}`}>
-              {tech}
-            </span>
+        <h3 id="skills-domain-title" style={{ fontFamily: 'var(--font-sans)', fontSize: '1.45rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.65rem' }}>
+          {activeDomain.title}
+        </h3>
+
+        {matchingCategory && (
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: '1.6' }}>
+            {matchingCategory.description}
+          </p>
+        )}
+
+        {/* Verified Technologies Tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
+          {activeDomain.techs.map((tech) => (
+            <div
+              key={tech}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(223, 192, 112, 0.25)',
+                borderRadius: '8px',
+                padding: '0.45rem 0.85rem',
+                fontSize: '0.84rem',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <CheckCircle2 size={14} color="var(--accent-cyan)" />
+              <span>{tech}</span>
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* Next CTA */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            sound.playWarp();
-            onNavigateSector('projects');
-          }}
-        >
-          <Layers size={16} />
-          <span>ENTER THE PROJECT GALAXY</span>
-          <ArrowRight size={16} />
-        </button>
-      </div>
-    </section>
+        {/* Advance to Project Exhibition */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            className="hero-btn-primary"
+            style={{ padding: '0.65rem 1.4rem', fontSize: '0.85rem' }}
+            onClick={() => {
+              sound.playWarp();
+              onNavigateSector('projects');
+            }}
+          >
+            <span>ENTER PROJECT GALAXY</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
+      </section>
+    </div>
   );
 };

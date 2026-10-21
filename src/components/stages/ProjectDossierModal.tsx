@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, ExternalLink, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, ExternalLink, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { GithubIcon } from '../common/BrandIcons';
 import { portfolioData, type Project } from '../../data/portfolio';
 import { sound } from '../universe/SoundSystem';
@@ -52,7 +52,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
       aria-labelledby="dossier-title"
       onClick={onClose}
     >
-      <div className="dossier-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="dossier-drawer" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
         <button
           className="dossier-close-btn"
@@ -60,21 +60,22 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
             sound.playClick();
             onClose();
           }}
-          aria-label="Close Project Dossier"
+          aria-label="Return to Exhibition"
+          title="Return to Exhibition [Esc]"
         >
           <X size={20} />
         </button>
 
         {/* Dossier Header */}
         <div style={{ marginBottom: '1.75rem', paddingRight: '2.5rem' }}>
-          <div className="stage-eyebrow stage-eyebrow-cyan">
+          <div className="spatial-eyebrow cyan">
             <ShieldCheck size={14} />
             <span>EXHIBIT DOSSIER // {project.category.toUpperCase()}</span>
           </div>
-          <h2 id="dossier-title" className="stage-heading" style={{ fontSize: 'clamp(1.5rem, 2.8vw, 2.2rem)', marginBottom: '0.5rem' }}>
+          <h2 id="dossier-title" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.5rem, 2.5vw, 2.1rem)', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem', lineHeight: 1.25 }}>
             {project.title}
           </h2>
-          <p style={{ color: 'var(--accent-gold-light)', fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
+          <p style={{ color: 'var(--accent-gold)', fontFamily: 'var(--font-mono)', fontSize: '0.84rem' }}>
             {project.tagline}
           </p>
         </div>
@@ -97,60 +98,76 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
           <ul className="dossier-highlights-list">
             {project.highlights.map((h, idx) => (
               <li key={idx} className="dossier-highlight-item">
-                <CheckCircle2 size={16} color="var(--accent-cyan)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <CheckCircle2 size={16} color="var(--accent-cyan)" style={{ flexShrink: 0, marginTop: '3px' }} />
                 <span>{h}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Technologies Employed */}
+        {/* Verified Technology Stack */}
         <div className="dossier-section">
-          <h3 className="dossier-section-title">04 // Technology Stack</h3>
-          <div className="tech-pills-list">
+          <h3 className="dossier-section-title">04 // Verified Technical Architecture</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {project.techStack.map((tech) => (
-              <span key={tech} className="tech-pill gold">
+              <span
+                key={tech}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(223, 192, 112, 0.3)',
+                  borderRadius: '6px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.8rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--accent-gold-light)',
+                }}
+              >
                 {tech}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Verified Links (Only displayed when configured) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-          {project.githubUrl && (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary"
-            >
-              <GithubIcon size={16} />
-              <span>VIEW SOURCE REPOSITORY</span>
-            </a>
-          )}
-
-          {project.liveUrl && (
-            <a
-              href={project.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
-            >
-              <ExternalLink size={16} />
-              <span>LIVE DEMO</span>
-            </a>
-          )}
-
+        {/* Actions & Links */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap', gap: '1rem' }}>
           <button
-            className="btn-secondary btn-cyan"
+            className="hero-btn-secondary"
+            style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
             onClick={() => {
               sound.playClick();
               onClose();
             }}
           >
-            <span>RETURN TO EXHIBITION [ESC]</span>
+            <ArrowLeft size={16} />
+            <span>RETURN TO EXHIBITION</span>
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {project.githubUrl && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-btn-secondary"
+                style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', textDecoration: 'none' }}
+              >
+                <GithubIcon size={16} />
+                <span>Codebase</span>
+              </a>
+            )}
+            {project.liveUrl && (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-btn-primary"
+                style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', textDecoration: 'none' }}
+              >
+                <span>Live System</span>
+                <ExternalLink size={16} />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>

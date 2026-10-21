@@ -17,84 +17,80 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
   onNavigateSector,
 }) => {
   return (
-    <section className="stage-card" aria-labelledby="projects-heading">
-      <div className="stage-eyebrow">
-        <Sparkles size={14} />
-        <span>SECTOR 04 // THE PROJECT GALAXY EXHIBITION</span>
-      </div>
+    <div className="projects-stage-container">
+      {/* Refined Exhibition Selector Dock */}
+      <section className="projects-gallery-dock" aria-label="Project Exhibition Selector">
+        <div className="projects-dock-header">
+          <div className="projects-dock-title">
+            <Sparkles size={16} color="var(--accent-gold)" />
+            <span>Spatial Project Exhibition // 5 Architectural Installations</span>
+          </div>
+          <button
+            className="hero-btn-secondary"
+            style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}
+            onClick={() => {
+              sound.playWarp();
+              onNavigateSector('experience');
+            }}
+          >
+            <span>Engineering Journey</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
 
-      <h2 id="projects-heading" className="stage-heading" style={{ fontSize: 'clamp(1.75rem, 3.2vw, 2.75rem)' }}>
-        Architectural <span className="stage-heading-accent">Spatial Exhibits.</span>
-      </h2>
-
-      <p className="stage-lead" style={{ marginBottom: '1.25rem' }}>
-        Each installation below corresponds to an interactive holographic 3D model in this sector. Select an exhibit to inspect its operational problem, microservice architecture, and verified technical capabilities.
-      </p>
-
-      {/* Exhibition Grid */}
-      <div className="projects-gallery-grid">
-        {EXHIBITION_PROJECTS.map((proj) => {
-          const isSelected = selectedProjectId === proj.id;
-          return (
-            <div
-              key={proj.id}
-              className={`project-exhibit-card ${isSelected ? 'active' : ''}`}
-              onClick={() => {
-                sound.playClick();
-                onSelectProject(proj.id);
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+        {/* 5 Project Installation Cards in the Dock */}
+        <div className="projects-cards-track">
+          {EXHIBITION_PROJECTS.map((proj) => {
+            const isSelected = selectedProjectId === proj.id;
+            return (
+              <div
+                key={proj.id}
+                role="button"
+                tabIndex={0}
+                className={`project-dock-card ${isSelected ? 'active' : ''}`}
+                onClick={() => {
                   sound.playClick();
                   onSelectProject(proj.id);
-                }
-              }}
-            >
-              <div>
-                <span className="card-cat">{proj.category}</span>
-                <h3 className="card-title">{proj.shortTitle}</h3>
-                <p className="card-desc">
-                  {proj.title}
-                </p>
-                <div className="tech-pills-list" style={{ marginBottom: '1rem' }}>
-                  {proj.techStack.slice(0, 3).map((t) => (
-                    <span key={t} className="tech-pill gold" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
-                      {t}
-                    </span>
-                  ))}
-                  {proj.techStack.length > 3 && (
-                    <span className="tech-pill" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
-                      +{proj.techStack.length - 3}
-                    </span>
-                  )}
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    sound.playClick();
+                    onSelectProject(proj.id);
+                  }
+                }}
+              >
+                <div>
+                  <div className="dock-card-category">{proj.category}</div>
+                  <h3 className="dock-card-title">{proj.shortTitle}</h3>
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                    {proj.techStack.slice(0, 3).map((t) => (
+                      <span
+                        key={t}
+                        style={{
+                          fontSize: '0.66rem',
+                          padding: '0.15rem 0.45rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: '4px',
+                          color: 'var(--text-secondary)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="dock-card-prompt">
+                  <Layers size={13} />
+                  <span>INSPECT 3D EXHIBIT</span>
+                  <ArrowRight size={13} />
                 </div>
               </div>
-
-              <div className="card-link-prompt">
-                <span>INSPECT DOSSIER</span>
-                <ArrowRight size={14} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Advance to next sector */}
-      <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            sound.playWarp();
-            onNavigateSector('experience');
-          }}
-        >
-          <Layers size={16} />
-          <span>TRAVEL TO ENGINEERING JOURNEY</span>
-          <ArrowRight size={16} />
-        </button>
-      </div>
-    </section>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 };

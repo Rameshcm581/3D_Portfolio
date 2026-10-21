@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, Award, Users, ArrowRight } from 'lucide-react';
+import { Award, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { portfolioData } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
 import { sound } from '../universe/SoundSystem';
@@ -13,93 +13,134 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
   const { education, certifications, leadership } = portfolioData;
 
   return (
-    <section className="stage-card" aria-labelledby="education-heading">
-      <div className="stage-eyebrow">
-        <GraduationCap size={14} />
-        <span>SECTOR 06 // KNOWLEDGE FOUNDATION & CREDENTIALS</span>
-      </div>
+    <div className="about-stage-wrapper">
+      <section className="spatial-card" aria-labelledby="education-title">
+        <div className="spatial-eyebrow">
+          <GraduationCap size={14} />
+          <span>Academic Foundation & Verified Credentials</span>
+        </div>
 
-      <h2 id="education-heading" className="stage-heading" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}>
-        Academic Foundation & <span className="stage-heading-accent">Verified Certifications.</span>
-      </h2>
+        <h2 id="education-title" className="spatial-heading">
+          Education, Certifications & <span className="spatial-heading-accent">Leadership.</span>
+        </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        {/* Education Item */}
-        <div style={{ background: 'rgba(18, 22, 32, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-gold)', marginBottom: '0.75rem' }}>
-            <GraduationCap size={18} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600 }}>FORMAL EDUCATION</span>
-          </div>
-          {education.map((edu) => (
-            <div key={edu.id} style={{ marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                {edu.degree}
-              </h3>
-              <p style={{ fontSize: '0.86rem', color: 'var(--accent-gold-light)', marginBottom: '0.2rem' }}>
-                {edu.institution}
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.76rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                <span>{edu.startDate} – {edu.endDate}</span>
-                {edu.honors && <span style={{ color: '#10b981' }}>{edu.honors}</span>}
+        {/* Formal Engineering Degree */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-gold)', letterSpacing: '0.1em', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+            Academic Foundation
+          </h3>
+          {education.map((edu, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '1rem 1.25rem',
+                marginBottom: '0.65rem',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {edu.degree}
+                  </h4>
+                  <p style={{ fontSize: '0.86rem', color: 'var(--accent-gold-light)', fontWeight: 500 }}>
+                    {edu.institution}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>
+                  {edu.honors && <span style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>{edu.honors}</span>}
+                  <div style={{ color: 'var(--text-muted)' }}>{edu.startDate} – {edu.endDate}</div>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Certifications Item */}
-        <div style={{ background: 'rgba(18, 22, 32, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-cyan)', marginBottom: '0.75rem' }}>
-            <Award size={18} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600 }}>TECHNICAL CERTIFICATIONS</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {certifications.slice(0, 4).map((cert) => (
-              <div key={cert.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.5rem' }}>
-                <h4 style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {cert.name}
-                </h4>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.15rem' }}>
-                  <span>{cert.issuer}</span>
-                  {cert.issueDate && <span>{cert.issueDate}</span>}
+        {/* Verified Certifications */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-cyan)', letterSpacing: '0.1em', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+            Verified Technical Certifications
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.6rem' }}>
+            {certifications.map((cert, idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '8px',
+                  padding: '0.65rem 0.85rem',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                  <ShieldCheck size={14} color="var(--accent-gold)" />
+                  <span>{cert.name}</span>
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  {cert.issuer} {cert.issueDate ? `· ${cert.issueDate}` : ''}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Leadership & Activities */}
-        <div style={{ background: 'rgba(18, 22, 32, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-gold-light)', marginBottom: '0.75rem' }}>
-            <Users size={18} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600 }}>LEADERSHIP & RECOGNITION</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {leadership.slice(0, 3).map((lead) => (
-              <div key={lead.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '0.5rem' }}>
-                <h4 style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {lead.title}
-                </h4>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.15rem' }}>
-                  {lead.organization && <span>{lead.organization}</span>}
-                  {lead.dateLabel && <span> · {lead.dateLabel}</span>}
+        {/* Technical Leadership */}
+        {leadership && leadership.length > 0 && (
+          <div style={{ marginBottom: '1.75rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-gold)', letterSpacing: '0.1em', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+              Leadership & Community
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {leadership.map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '8px',
+                    padding: '0.65rem 0.85rem',
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Award size={14} color="var(--accent-cyan)" />
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.title}</span>
+                    {item.organization && <span style={{ color: 'var(--text-muted)' }}>({item.organization})</span>}
+                  </div>
+                  {item.dateLabel && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-gold)' }}>
+                      {item.dateLabel}
+                    </span>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Advance Button */}
-      <button
-        className="btn-primary"
-        onClick={() => {
-          sound.playWarp();
-          onNavigateSector('contact');
-        }}
-      >
-        <span>CONNECT AT CONNECTION POINT</span>
-        <ArrowRight size={16} />
-      </button>
-    </section>
+        {/* Advance to Contact */}
+        <div style={{ marginTop: '1.5rem' }}>
+          <button
+            className="hero-btn-primary"
+            onClick={() => {
+              sound.playWarp();
+              onNavigateSector('contact');
+            }}
+          >
+            <span>CONNECT WITH RAMESH</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      </section>
+
+      {/* Right side is open for the 3D Knowledge Sanctuary Tablets */}
+      <div />
+    </div>
   );
 };
