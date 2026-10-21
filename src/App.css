@@ -1,0 +1,30 @@
+/* App-level layout & accessible skip link */
+
+.portfolio-app {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.skip-to-content {
+  position: absolute;
+  top: -60px;
+  left: 1.5rem;
+  background: var(--accent-gradient);
+  color: #05070d;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  z-index: 9999;
+  transition: top var(--transition-fast);
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  top: 1rem;
+}
+
+main {
+  flex: 1;
+}

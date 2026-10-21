@@ -1,0 +1,216 @@
+.contact-section {
+  padding-top: var(--section-padding);
+  padding-bottom: var(--section-padding);
+  position: relative;
+}
+
+.contact-editorial-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.contact-header-block {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.contact-headline {
+  font-size: clamp(2.2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.15;
+}
+
+.contact-lead-text {
+  font-size: 1.12rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.contact-action-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+/* Primary Direct Email Card */
+.contact-primary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-gold-border);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  transition: all var(--transition-normal);
+}
+
+.contact-primary-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-gold);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(207, 168, 81, 0.12);
+}
+
+.card-top-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+}
+
+.direct-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+}
+
+.card-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.email-address-display {
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  word-break: break-all;
+}
+
+.email-subtext {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.email-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.copy-action-btn {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.text-emerald {
+  color: #10b981;
+}
+
+/* Profile Channels Column */
+.contact-channels-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.channel-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.channel-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-medium);
+  transform: translateX(4px);
+}
+
+.channel-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.channel-card:hover .channel-icon-wrap {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-border);
+}
+
+.channel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-grow: 1;
+}
+
+.channel-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.channel-handle {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.channel-arrow {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.channel-card:hover .channel-arrow {
+  color: var(--accent-gold);
+  transform: translate(2px, -2px);
+}
+
+/* Location Context Card */
+.location-context-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1.15rem 1.4rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (max-width: 860px) {
+  .contact-action-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,190 @@
+/* Navigation Dock Styling */
+
+.nav-dock {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1080px, calc(100% - 3rem));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  z-index: 100;
+  background: rgba(12, 15, 22, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+.dock-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 320px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-gold);
+  box-shadow: 0 0 8px var(--accent-gold);
+}
+
+.status-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold-light);
+}
+
+.status-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Controls */
+.dock-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.dock-arrow-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dock-arrow-btn:hover {
+  background: rgba(207, 168, 81, 0.15);
+  color: var(--text-primary);
+  border-color: rgba(207, 168, 81, 0.35);
+}
+
+.arrow-text {
+  letter-spacing: 0.08em;
+}
+
+/* Waypoint Track */
+.dock-waypoints {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.waypoint-bar {
+  position: relative;
+  width: 26px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+
+.waypoint-bar:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scaleY(1.3);
+}
+
+.waypoint-bar.active {
+  width: 36px;
+  background: var(--accent-gold-light);
+  box-shadow: 0 0 12px rgba(207, 168, 81, 0.5);
+}
+
+.waypoint-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 12, 16, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  white-space: nowrap;
+  color: var(--text-primary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.waypoint-bar:hover .waypoint-tooltip {
+  opacity: 1;
+}
+
+/* Quick Jump */
+.dock-quick-jump {
+  display: flex;
+  align-items: center;
+}
+
+.dock-jump-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all var(--transition-fast);
+}
+
+.dock-jump-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+@media (max-width: 900px) {
+  .nav-dock {
+    width: calc(100% - 1.5rem);
+    bottom: 0.75rem;
+    padding: 0.65rem 1rem;
+  }
+  .dock-status {
+    display: none;
+  }
+  .dock-quick-jump {
+    display: none;
+  }
+  .dock-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
