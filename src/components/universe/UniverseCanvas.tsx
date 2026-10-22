@@ -2,9 +2,11 @@ import { Component, useState, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { SystemMapScene } from './SystemMapScene';
+import { type Theme } from '../../theme';
 
 interface UniverseCanvasProps {
   reducedMotion: boolean;
+  theme: Theme;
 }
 
 interface ErrorBoundaryProps {
@@ -46,7 +48,7 @@ const maxDpr = () => {
   return Math.min(window.devicePixelRatio || 1, isTouchDevice() ? 1.5 : 2);
 };
 
-export function UniverseCanvas({ reducedMotion }: UniverseCanvasProps) {
+export function UniverseCanvas({ reducedMotion, theme }: UniverseCanvasProps) {
   const [lite] = useState(isTouchDevice);
   const [dprCeiling] = useState(maxDpr);
   const [dpr, setDpr] = useState(dprCeiling);
@@ -61,7 +63,7 @@ export function UniverseCanvas({ reducedMotion }: UniverseCanvasProps) {
         fallback={
           <div
             className="webgl-fallback-ambient"
-            style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 40%, #151a24 0%, #08090d 100%)' }}
+            style={{ position: 'absolute', inset: 0, background: 'var(--bg-primary)' }}
           />
         }
       >
@@ -71,13 +73,13 @@ export function UniverseCanvas({ reducedMotion }: UniverseCanvasProps) {
           gl={{ antialias: true, powerPreference: 'high-performance' }}
           style={{ width: '100%', height: '100%' }}
         >
-          <color attach="background" args={['#07080b']} />
+          
           {/* Drop resolution when frames get slow, restore it when there is headroom */}
           <PerformanceMonitor
             onDecline={() => setDpr((d) => Math.max(1, d - 0.5))}
             onIncline={() => setDpr((d) => Math.min(dprCeiling, d + 0.5))}
           />
-          <SystemMapScene reducedMotion={reducedMotion} lite={lite} />
+          <SystemMapScene reducedMotion={reducedMotion} lite={lite} theme={theme} />
         </Canvas>
       </WebGLErrorBoundary>
     </div>

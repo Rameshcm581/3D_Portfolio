@@ -28,15 +28,15 @@ export const ExperienceStage: React.FC<ExperienceStageProps> = ({ onNavigateSect
         {/* Current Role Header */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(223, 192, 112, 0.35)',
+            background: 'rgb(var(--ink-rgb) / 0.04)',
+            border: '1px solid rgb(var(--gold-rgb) / 0.35)',
             borderRadius: '14px',
             padding: '1.25rem 1.5rem',
             marginBottom: '1.5rem',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <span style={{ padding: '0.2rem 0.6rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '6px', fontSize: '0.72rem', color: '#10b981', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            <span style={{ padding: '0.2rem 0.6rem', background: 'rgb(var(--emerald-rgb) / 0.15)', border: '1px solid rgb(var(--emerald-rgb) / 0.3)', borderRadius: '6px', fontSize: '0.72rem', color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
               CURRENT ROLE · FULL-TIME
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>

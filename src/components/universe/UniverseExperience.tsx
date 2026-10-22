@@ -14,6 +14,7 @@ import { scrollStore } from './scrollStore';
 import { MeshOverlay } from './MeshOverlay';
 import { describeNode } from './meshInteraction';
 import { EXHIBITION_PROJECTS } from '../../data/universeData';
+import { applyTheme, currentTheme, savedTheme, systemTheme, type Theme } from '../../theme';
 
 // Which side of a section the content card sits on, leaving the other side open for the 3D scene
 const SIDES: Partial<Record<SectorId, 'right'>> = { experience: 'right' };
@@ -28,6 +29,27 @@ export const UniverseExperience: React.FC = () => {
     }
     return false;
   });
+
+  const [theme, setTheme] = useState<Theme>(currentTheme);
+
+  const toggleTheme = useCallback(() => {
+    const next: Theme = currentTheme() === 'dark' ? 'light' : 'dark';
+    applyTheme(next, true);
+    setTheme(next);
+  }, []);
+
+  // Until the visitor picks a theme, follow the system setting live
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    const onChange = () => {
+      if (savedTheme()) return;
+      const next = systemTheme();
+      applyTheme(next, false);
+      setTheme(next);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   const activeRef = useRef<SectorId>('core');
   const reducedRef = useRef(reducedMotion);
@@ -224,7 +246,7 @@ export const UniverseExperience: React.FC = () => {
   return (
     <div
       className={`universe-experience-root${reducedMotion ? ' reduced-motion' : ''}`}
-      style={{ width: '100%', position: 'relative', background: '#07080b' }}
+      style={{ width: '100%', position: 'relative', background: 'var(--bg-primary)' }}
     >
       {/* Accessible skip link */}
       <a href="#active-stage" className="skip-to-content">
@@ -232,7 +254,7 @@ export const UniverseExperience: React.FC = () => {
       </a>
 
       {/* Fixed 3D background: the camera travels the service map as you scroll */}
-      <UniverseCanvas reducedMotion={reducedMotion} />
+      <UniverseCanvas reducedMotion={reducedMotion} theme={theme} />
       <MeshOverlay activeIndex={SECTORS.findIndex((s) => s.id === activeSectorId)} />
 
       <UniverseNav
@@ -240,6 +262,8 @@ export const UniverseExperience: React.FC = () => {
         onNavigateSector={navigateToSector}
         reducedMotion={reducedMotion}
         onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* One section per destination, in normal page flow */}

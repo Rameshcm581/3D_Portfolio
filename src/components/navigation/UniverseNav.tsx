@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Eye, Menu, X, ArrowRight } from 'lucide-react';
+import { Volume2, VolumeX, Eye, Menu, X, ArrowRight, Sun, Moon } from 'lucide-react';
+import { type Theme } from '../../theme';
 import { SECTORS, type SectorId } from '../../types/universe';
 import { sound } from '../universe/SoundSystem';
 import './UniverseNav.css';
@@ -9,6 +10,8 @@ interface UniverseNavProps {
   onNavigateSector: (id: SectorId) => void;
   reducedMotion: boolean;
   onToggleReducedMotion: () => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
 export const UniverseNav: React.FC<UniverseNavProps> = ({
@@ -16,6 +19,8 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
   onNavigateSector,
   reducedMotion,
   onToggleReducedMotion,
+  theme,
+  onToggleTheme,
 }) => {
   const [isMuted, setIsMuted] = useState(sound.getMuted());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -92,6 +97,16 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
 
         {/* Right Utility Actions */}
         <div className="nav-actions">
+          {/* Light / Dark Theme Toggle */}
+          <button
+            className="nav-icon-btn"
+            onClick={onToggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
           {/* Sound Toggle */}
           <button
             className={`nav-icon-btn ${!isMuted ? 'active' : ''}`}

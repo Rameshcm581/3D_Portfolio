@@ -33,8 +33,8 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
             <div
               key={idx}
               style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgb(var(--ink-rgb) / 0.04)',
+                border: '1px solid rgb(var(--ink-rgb) / 0.08)',
                 borderRadius: '12px',
                 padding: '1rem 1.25rem',
                 marginBottom: '0.65rem',
@@ -68,8 +68,8 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
               <div
                 key={idx}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: 'rgb(var(--ink-rgb) / 0.03)',
+                  border: '1px solid rgb(var(--ink-rgb) / 0.06)',
                   borderRadius: '8px',
                   padding: '0.65rem 0.85rem',
                   fontSize: '0.82rem',
@@ -98,8 +98,8 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
                 <div
                   key={idx}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    background: 'rgb(var(--ink-rgb) / 0.02)',
+                    border: '1px solid rgb(var(--ink-rgb) / 0.05)',
                     borderRadius: '8px',
                     padding: '0.65rem 0.85rem',
                     fontSize: '0.82rem',

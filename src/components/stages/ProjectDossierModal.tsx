@@ -120,8 +120,8 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
               <span
                 key={tech}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(223, 192, 112, 0.3)',
+                  background: 'rgb(var(--ink-rgb) / 0.05)',
+                  border: '1px solid rgb(var(--gold-rgb) / 0.3)',
                   borderRadius: '6px',
                   padding: '0.35rem 0.75rem',
                   fontSize: '0.8rem',
@@ -136,7 +136,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
         </div>
 
         {/* Actions & Links */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgb(var(--ink-rgb) / 0.08)', flexWrap: 'wrap', gap: '1rem' }}>
           <button
             className="hero-btn-secondary"
             style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}

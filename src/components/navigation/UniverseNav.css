@@ -18,13 +18,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  background: rgba(8, 10, 16, 0.75);
+  background: rgb(var(--panel-rgb) / 0.75);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgb(var(--ink-rgb) / 0.08);
   border-radius: 9999px;
   padding: 0.5rem 0.75rem 0.5rem 0.75rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 16px 40px rgb(var(--shadow-rgb) / calc(0.5 * var(--shadow-k))), inset 0 1px 0 rgb(var(--ink-rgb) / 0.06);
   pointer-events: auto;
 }
 
@@ -43,7 +43,7 @@
   height: 32px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid rgba(223, 192, 112, 0.35);
+  border: 1px solid rgb(var(--gold-rgb) / 0.35);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
@@ -102,14 +102,14 @@
 
 .nav-link-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(var(--ink-rgb) / 0.05);
 }
 
 .nav-link-btn.active {
-  color: #0c0f17;
+  color: var(--on-accent);
   background: var(--accent-gold);
   font-weight: 600;
-  box-shadow: 0 0 16px rgba(223, 192, 112, 0.35);
+  box-shadow: 0 0 16px rgb(var(--gold-rgb) / 0.35);
 }
 
 /* Right Controls */
@@ -121,8 +121,8 @@
 }
 
 .nav-icon-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--ink-rgb) / 0.04);
+  border: 1px solid rgb(var(--ink-rgb) / 0.08);
   color: var(--text-secondary);
   width: 36px;
   height: 36px;
@@ -135,19 +135,19 @@
 }
 
 .nav-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgb(var(--ink-rgb) / 0.09);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgb(var(--ink-rgb) / 0.2);
 }
 
 .nav-icon-btn.active {
   color: var(--accent-gold);
-  border-color: rgba(223, 192, 112, 0.4);
+  border-color: rgb(var(--gold-rgb) / 0.4);
 }
 
 .nav-cta-btn {
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgb(var(--cyan-rgb) / 0.12);
+  border: 1px solid rgb(var(--cyan-rgb) / 0.3);
   color: var(--accent-cyan);
   font-family: var(--font-sans);
   font-size: 0.8rem;
@@ -161,8 +161,8 @@
 
 .nav-cta-btn:hover {
   background: var(--accent-cyan);
-  color: #07090e;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  color: var(--on-accent);
+  box-shadow: 0 0 16px rgb(var(--cyan-rgb) / 0.4);
 }
 
 .nav-mobile-toggle {
@@ -184,13 +184,13 @@
   top: 5rem;
   left: 1.5rem;
   right: 1.5rem;
-  background: rgba(10, 13, 20, 0.96);
+  background: rgb(var(--panel-rgb) / 0.96);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(var(--ink-rgb) / 0.1);
   border-radius: 20px;
   padding: 1.25rem;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 24px 64px rgb(var(--shadow-rgb) / calc(0.8 * var(--shadow-k)));
   pointer-events: auto;
   display: flex;
   flex-direction: column;
@@ -210,7 +210,7 @@
 }
 
 .nav-mobile-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(var(--ink-rgb) / 0.03);
   border: 1px solid transparent;
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -228,8 +228,8 @@
 
 .nav-mobile-item:hover,
 .nav-mobile-item.active {
-  background: rgba(223, 192, 112, 0.12);
-  border-color: rgba(223, 192, 112, 0.3);
+  background: rgb(var(--gold-rgb) / 0.12);
+  border-color: rgb(var(--gold-rgb) / 0.3);
   color: var(--accent-gold);
 }
 
@@ -253,5 +253,32 @@
   .nav-brand-title {
     font-size: 0.55rem;
     letter-spacing: 0.05em;
+  }
+}
+
+/* Four utility buttons plus the brand need room on phones */
+@media (max-width: 480px) {
+  .universe-nav-container {
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .nav-actions {
+    gap: 0.25rem;
+    padding-right: 0;
+  }
+
+  .nav-icon-btn,
+  .nav-mobile-toggle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-brand {
+    min-width: 0;
+  }
+
+  .nav-brand-name {
+    font-size: 0.82rem;
   }
 }

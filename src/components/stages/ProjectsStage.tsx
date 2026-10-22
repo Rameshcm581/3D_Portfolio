@@ -82,7 +82,7 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
                         style={{
                           fontSize: '0.66rem',
                           padding: '0.15rem 0.45rem',
-                          background: 'rgba(255, 255, 255, 0.05)',
+                          background: 'rgb(var(--ink-rgb) / 0.05)',
                           borderRadius: '4px',
                           color: 'var(--text-secondary)',
                           fontFamily: 'var(--font-mono)',

@@ -51,8 +51,8 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
         {/* Direct Email Card with One-Click Copy */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(223, 192, 112, 0.35)',
+            background: 'rgb(var(--ink-rgb) / 0.04)',
+            border: '1px solid rgb(var(--gold-rgb) / 0.35)',
             borderRadius: '12px',
             padding: '1.25rem',
             marginBottom: '1.5rem',
@@ -65,7 +65,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: copied ? '#10b981' : 'var(--text-muted)',
+                color: copied ? 'var(--accent-emerald)' : 'var(--text-muted)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -75,7 +75,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
               }}
               title="Copy Email Address"
             >
-              {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+              {copied ? <Check size={14} color="var(--accent-emerald)" /> : <Copy size={14} />}
               <span>{copied ? 'COPIED TO CLIPBOARD' : 'COPY'}</span>
             </button>
           </div>
@@ -107,8 +107,8 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
               placeholder="e.g. Backend architecture / Automation"
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'rgb(var(--ink-rgb) / 0.04)',
+                border: '1px solid rgb(var(--ink-rgb) / 0.12)',
                 borderRadius: '8px',
                 padding: '0.7rem 0.9rem',
                 color: 'var(--text-primary)',
@@ -130,8 +130,8 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
               placeholder="Describe your technical requirements or collaboration opportunity..."
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'rgb(var(--ink-rgb) / 0.04)',
+                border: '1px solid rgb(var(--ink-rgb) / 0.12)',
                 borderRadius: '8px',
                 padding: '0.7rem 0.9rem',
                 color: 'var(--text-primary)',
@@ -153,7 +153,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
         </form>
 
         {/* Verified Social Connect & Return to Core */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--ink-rgb) / 0.08)', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <a
               href="https://github.com/Rameshcm581"

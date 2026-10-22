@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="en" class="dark-theme">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07080c" />
+    <script>
+      // Set the theme before first paint so there is no flash of the wrong one
+      (function () {
+        var theme = 'dark';
+        try {
+          var saved = localStorage.getItem('theme');
+          if (saved === 'light' || saved === 'dark') theme = saved;
+          else if (window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f3f5f9');
+      })();
+    </script>
     <title>Ramesh C | Software Engineer</title>
     <meta
       name="description"
