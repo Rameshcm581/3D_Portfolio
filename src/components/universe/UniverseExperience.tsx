@@ -17,7 +17,9 @@ import { EXHIBITION_PROJECTS } from '../../data/universeData';
 import { applyTheme, currentTheme, savedTheme, systemTheme, type Theme } from '../../theme';
 
 // The 3D scene (three.js + react-three-fiber, the bulk of the bundle) loads after the page has painted
-const UniverseCanvas = lazy(() => import('./UniverseCanvas').then((m) => ({ default: m.UniverseCanvas })));
+// Started at module load, not first render, so the download overlaps with React mounting the page
+const canvasModule = import('./UniverseCanvas');
+const UniverseCanvas = lazy(() => canvasModule.then((m) => ({ default: m.UniverseCanvas })));
 
 // Which side of a section the content card sits on, leaving the other side open for the 3D scene
 const SIDES: Partial<Record<SectorId, 'right'>> = { experience: 'right' };

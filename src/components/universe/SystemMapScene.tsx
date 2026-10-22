@@ -634,7 +634,7 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
 
       {/* Service nodes: a solid core inside a slowly turning wire shell */}
       <instancedMesh ref={solidRef} args={[undefined, undefined, nodes.length]} frustumCulled={false}>
-        <icosahedronGeometry args={[1, 0]} />
+        <icosahedronGeometry args={[1, 1]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
       <instancedMesh ref={wireRef} args={[undefined, undefined, nodes.length]} frustumCulled={false}>
