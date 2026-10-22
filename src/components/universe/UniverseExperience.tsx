@@ -11,6 +11,9 @@ import { ExperienceStage } from '../stages/ExperienceStage';
 import { EducationStage } from '../stages/EducationStage';
 import { ContactStage } from '../stages/ContactStage';
 import { scrollStore } from './scrollStore';
+import { MeshOverlay } from './MeshOverlay';
+import { describeNode } from './meshInteraction';
+import { EXHIBITION_PROJECTS } from '../../data/universeData';
 
 // Which side of a section the content card sits on, leaving the other side open for the 3D scene
 const SIDES: Partial<Record<SectorId, 'right'>> = { experience: 'right' };
@@ -114,15 +117,62 @@ export const UniverseExperience: React.FC = () => {
     };
   }, [navigateToSector]);
 
-  // Pointer position for the camera's parallax (the canvas itself ignores pointer events)
+  // Pointer: drives camera parallax and lets the mesh react. The canvas ignores pointer
+  // events, so we only treat the pointer as "on the mesh" over empty page, not over cards.
   useEffect(() => {
-    const onMove = (e: PointerEvent) => {
+    let touchTimer = 0;
+    const isEmptySpace = (t: EventTarget | null) =>
+      t === document.documentElement ||
+      t === document.body ||
+      t instanceof HTMLCanvasElement ||
+      (t instanceof HTMLElement && t.classList.contains('universe-experience-root'));
+
+    const track = (e: PointerEvent) => {
       scrollStore.pointerX = (e.clientX / window.innerWidth) * 2 - 1;
       scrollStore.pointerY = -((e.clientY / window.innerHeight) * 2 - 1);
+      scrollStore.pointerActive = isEmptySpace(e.target);
     };
+    const onMove = (e: PointerEvent) => {
+      window.clearTimeout(touchTimer);
+      track(e);
+    };
+    const onUp = (e: PointerEvent) => {
+      // A finger has no hover: let the tap register, then release the mesh
+      if (e.pointerType === 'touch') {
+        window.clearTimeout(touchTimer);
+        touchTimer = window.setTimeout(() => {
+          scrollStore.pointerActive = false;
+        }, 1500);
+      }
+    };
+    const onLeave = () => {
+      scrollStore.pointerActive = false;
+    };
+
+    // Clicking a node: open a project's case study, or travel to that node's section
+    const onClick = (e: MouseEvent) => {
+      if (!isEmptySpace(e.target) || scrollStore.hoverNode < 0) return;
+      const activeIdx = SECTORS.findIndex((s) => s.id === activeRef.current);
+      const action = describeNode(scrollStore.nodeInfo[scrollStore.hoverNode], activeIdx)?.action;
+      if (action?.kind === 'project') setSelectedProjectId(EXHIBITION_PROJECTS[action.projectIndex].id);
+      else if (action?.kind === 'travel') navigateToSector(SECTORS[action.cluster].id);
+    };
+
     window.addEventListener('pointermove', onMove, { passive: true });
-    return () => window.removeEventListener('pointermove', onMove);
-  }, []);
+    window.addEventListener('pointerdown', onMove, { passive: true });
+    window.addEventListener('pointerup', onUp, { passive: true });
+    document.documentElement.addEventListener('pointerleave', onLeave);
+    window.addEventListener('click', onClick);
+    return () => {
+      window.clearTimeout(touchTimer);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerdown', onMove);
+      window.removeEventListener('pointerup', onUp);
+      document.documentElement.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener('click', onClick);
+      scrollStore.pointerActive = false;
+    };
+  }, [navigateToSector]);
 
   // Reveal each section's content the first time it scrolls into view
   useEffect(() => {
@@ -151,10 +201,14 @@ export const UniverseExperience: React.FC = () => {
     };
   }, [selectedProjectId]);
 
-  // Keep the 3D scene's highlighted project in step with the open dossier
+  // Tell the 3D scene which project dossier is open and which Skills tab is selected
   useEffect(() => {
-    if (!selectedProjectId) scrollStore.highlightProject = -1;
+    scrollStore.openProject = EXHIBITION_PROJECTS.findIndex((p) => p.id === selectedProjectId);
   }, [selectedProjectId]);
+
+  useEffect(() => {
+    scrollStore.skillDomain = selectedSkillDomain;
+  }, [selectedSkillDomain]);
 
   const section = (id: SectorId, content: React.ReactNode) => (
     <section
@@ -179,6 +233,7 @@ export const UniverseExperience: React.FC = () => {
 
       {/* Fixed 3D background: the camera travels the service map as you scroll */}
       <UniverseCanvas reducedMotion={reducedMotion} />
+      <MeshOverlay activeIndex={SECTORS.findIndex((s) => s.id === activeSectorId)} />
 
       <UniverseNav
         activeSectorId={activeSectorId}

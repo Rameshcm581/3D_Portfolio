@@ -1,8 +1,17 @@
 import { useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { buildSystemMap, mulberry32, GOLD, CYAN, SECTION_COUNT, type SystemMapData } from './systemMap';
-import { scrollStore } from './scrollStore';
+import {
+  buildSystemMap,
+  backbonePoint,
+  mulberry32,
+  GOLD,
+  CYAN,
+  SECTION_COUNT,
+  type SystemMapData,
+} from './systemMap';
+import { scrollStore, toNodeInfo } from './scrollStore';
+import { EXHIBITION_PROJECTS } from '../../data/universeData';
 
 interface SystemMapSceneProps {
   reducedMotion: boolean;
@@ -11,6 +20,10 @@ interface SystemMapSceneProps {
 
 const BASE_FOV = 48;
 const DIM = 0.22;
+const TRACE_COUNT = 6;
+const TRACE_LEAD = 0.22; // how far ahead of the camera the request packet travels, in sections
+const TRACE_COLOR = new THREE.Color('#fff1c1');
+const PROJECT_COUNT = EXHIBITION_PROJECTS.length;
 
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 // How "lit" a cluster is, given how far the camera currently is from its section
@@ -19,16 +32,24 @@ const activity = (cluster: number, f: number) =>
 
 interface Sim {
   data: SystemMapData;
-  packets: {
-    pickEdge: () => number;
-    edge: Int32Array;
-    u: Float32Array;
-    speed: Float32Array;
-  };
+  packets: { edge: Int32Array; u: Float32Array; speed: Float32Array };
+  /** Edge indices belonging to each project's architecture */
+  archEdges: number[][];
+  rand: () => number;
+  /** Live node positions (architecture nodes move as they unfold) */
+  live: THREE.Vector3[];
+  unfold: Float32Array;
+  dist: Float32Array;
+  /** Camera distance per node */
+  depth: Float32Array;
+  screen: Float32Array;
+  alpha: Float32Array;
+  hover: number;
   dummy: THREE.Object3D;
   color: THREE.Color;
   look: THREE.Vector3;
   pos: THREE.Vector3;
+  tmp: THREE.Vector3;
   smooth: number;
   parX: number;
   parY: number;
@@ -36,39 +57,52 @@ interface Sim {
   ready: boolean;
 }
 
-// Packets ride the edges; the backbone is weighted so the main line always has traffic
 function createSim(data: SystemMapData, packetCount: number): Sim {
   const rand = mulberry32(23);
-  const { edges } = data;
-  const backbone = edges.map((e, i) => (e.cluster < 0 ? i : -1)).filter((i) => i >= 0);
-  const pickEdge = () =>
-    backbone.length > 0 && rand() < 0.45
-      ? backbone[Math.floor(rand() * backbone.length)]
-      : Math.floor(rand() * edges.length);
-  return {
+  const { edges, nodes } = data;
+  const archEdges: number[][] = Array.from({ length: PROJECT_COUNT }, () => []);
+  edges.forEach((e, i) => {
+    if (e.projectIndex >= 0) archEdges[e.projectIndex].push(i);
+  });
+  const sim: Sim = {
     data,
     packets: {
-      pickEdge,
-      edge: Int32Array.from({ length: packetCount }, pickEdge),
+      edge: Int32Array.from({ length: packetCount }, () => Math.floor(rand() * edges.length)),
       u: Float32Array.from({ length: packetCount }, rand),
       speed: Float32Array.from({ length: packetCount }, () => 2.2 + rand() * 2.4),
     },
+    archEdges,
+    rand,
+    live: nodes.map((n) => n.position.clone()),
+    unfold: new Float32Array(PROJECT_COUNT),
+    dist: new Float32Array(nodes.length),
+    depth: new Float32Array(nodes.length),
+    screen: new Float32Array(nodes.length * 4),
+    alpha: new Float32Array(nodes.length),
+    hover: -1,
     dummy: new THREE.Object3D(),
     color: new THREE.Color(),
     look: new THREE.Vector3(),
     pos: new THREE.Vector3(),
+    tmp: new THREE.Vector3(),
     smooth: 0,
     parX: 0,
     parY: 0,
     fov: BASE_FOV,
     ready: false,
   };
+  // Hand the overlay (labels, tooltip) everything it needs to read each frame
+  scrollStore.nodeInfo = nodes.map(toNodeInfo);
+  scrollStore.nodeScreen = sim.screen;
+  scrollStore.labelAlpha = sim.alpha;
+  scrollStore.labelNodes = nodes.map((n, i) => (n.label ? i : -1)).filter((i) => i >= 0);
+  return sim;
 }
 
 export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
   const size = useThree((s) => s.size);
   const portrait = size.width / size.height < 1;
-  const data = useMemo(() => buildSystemMap({ lite, portrait }), [lite, portrait]);
+  const data = useMemo(() => buildSystemMap({ portrait }), [portrait]);
   const { nodes, edges, waypoints, hubs } = data;
 
   const curve = useMemo(() => new THREE.CatmullRomCurve3(waypoints, false, 'catmullrom', 0.5), [waypoints]);
@@ -76,17 +110,14 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
   const solidRef = useRef<THREE.InstancedMesh>(null);
   const wireRef = useRef<THREE.InstancedMesh>(null);
   const packetRef = useRef<THREE.InstancedMesh>(null);
+  const traceRef = useRef<THREE.InstancedMesh>(null);
+  const edgePosRef = useRef<THREE.BufferAttribute>(null);
   const edgeColorRef = useRef<THREE.BufferAttribute>(null);
   const coreShellRef = useRef<THREE.Mesh>(null);
   const ringRefs = useRef<(THREE.Mesh | null)[]>([]);
 
-  const edgePositions = useMemo(() => {
-    const arr = new Float32Array(edges.length * 6);
-    edges.forEach((e, i) => {
-      arr.set([e.a.x, e.a.y, e.a.z, e.b.x, e.b.y, e.b.z], i * 6);
-    });
-    return arr;
-  }, [edges]);
+  // Initial buffers only; the per-frame values are written straight into the attributes
+  const edgePosInit = useMemo(() => new Float32Array(edges.length * 6), [edges]);
   const edgeColorInit = useMemo(() => new Float32Array(edges.length * 6), [edges]);
 
   const stars = useMemo(() => {
@@ -103,7 +134,7 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
 
   const packetCount = lite ? 50 : 110;
 
-  // Per-frame simulation state lives in a ref: it is created lazily and rebuilt when the map changes
+  // Per-frame simulation state lives in a ref: created lazily, rebuilt when the map changes
   const simRef = useRef<Sim | null>(null);
 
   useFrame((state, rawDelta) => {
@@ -114,7 +145,7 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       simRef.current = createSim(data, packetCount);
     }
     const s = simRef.current;
-    const { packets } = s;
+    const { packets, live } = s;
 
     // --- Camera: follow smoothed scroll progress along the path ---
     const target = THREE.MathUtils.clamp(scrollStore.progress, 0, SECTION_COUNT - 1);
@@ -147,22 +178,95 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       camera.fov = s.fov;
       camera.updateProjectionMatrix();
     }
+    camera.updateMatrixWorld();
 
     const motion = reducedMotion ? 0 : 1;
-    const highlight = scrollStore.highlightProject;
+    const aspect = state.size.width / state.size.height;
+    const showLabels = aspect >= 1;
+
+    // --- Which project is unfolded: a hovered card, else a hovered node, else the open dossier ---
+    const hoveredProject = s.hover >= 0 ? nodes[s.hover].projectIndex : -1;
+    const focusProject =
+      scrollStore.highlightProject >= 0
+        ? scrollStore.highlightProject
+        : hoveredProject >= 0
+          ? hoveredProject
+          : scrollStore.openProject;
+    for (let p = 0; p < PROJECT_COUNT; p++) {
+      s.unfold[p] = THREE.MathUtils.damp(s.unfold[p], p === focusProject ? 1 : 0, 5, dt);
+    }
+    const unfoldOf = (p: number) => (p >= 0 ? smoothstep(s.unfold[p]) : 0);
+
+    // Architecture nodes slide out of their project node as it unfolds
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.isArch && n.offset) live[i].copy(n.position).addScaledVector(n.offset, unfoldOf(n.projectIndex));
+    }
+
+    // --- Project every node to the screen, then find what the pointer is over ---
+    const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+    const pointerOn = scrollStore.pointerActive;
+    let best = -1;
+    let bestScore = 1;
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      s.tmp.copy(live[i]).project(camera);
+      const onScreen = s.tmp.z < 1 && Math.abs(s.tmp.x) < 1.15 && Math.abs(s.tmp.y) < 1.15;
+      s.screen[i * 4] = s.tmp.x;
+      s.screen[i * 4 + 1] = s.tmp.y;
+      s.screen[i * 4 + 2] = onScreen ? 1 : 0;
+      s.depth[i] = camera.position.distanceTo(live[i]);
+
+      s.dist[i] = 99;
+      if (!pointerOn || !onScreen) continue;
+      const dx = (s.tmp.x - scrollStore.pointerX) * aspect;
+      const dy = s.tmp.y - scrollStore.pointerY;
+      const d = Math.hypot(dx, dy);
+      s.dist[i] = d;
+
+      const interactive = n.isArch ? unfoldOf(n.projectIndex) > 0.5 : activity(n.cluster, f) > 0.35;
+      if (!interactive) continue;
+      const hitRadius = Math.max((n.size * 1.4) / (s.depth[i] * tanHalf), 0.05);
+      const score = d / hitRadius;
+      if (score < bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    }
+    s.hover = best;
+    scrollStore.hoverNode = best;
 
     // --- Nodes ---
     const solid = solidRef.current;
     const wire = wireRef.current;
+    const domain = scrollStore.skillDomain;
     if (solid && wire) {
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
         const act = activity(n.cluster, f);
-        const boost = n.projectIndex >= 0 && n.projectIndex === highlight ? 0.55 : 0;
+        const prox = Math.max(0, 1 - s.dist[i] / 0.3);
+        const hoverBoost = i === s.hover ? 0.6 : 0.3 * prox * prox;
         const pulse = Math.sin(t * 1.6 + i * 1.7) * 0.07 * motion;
-        const sc = n.size * (0.7 + 0.5 * act + boost + pulse);
 
-        s.dummy.position.copy(n.position);
+        let sc: number;
+        let lit: number;
+        if (n.isArch) {
+          const uf = unfoldOf(n.projectIndex);
+          sc = uf < 0.02 ? 0 : n.size * (1 + pulse) * (0.4 + 0.6 * uf) * 1.2;
+          lit = Math.min(1, 0.55 + 0.45 * uf + hoverBoost);
+        } else {
+          const focusBoost = n.projectIndex >= 0 && n.projectIndex === focusProject ? 0.55 : 0;
+          const domainMatch = domain && n.domains?.includes(domain) ? 0.5 : 0;
+          sc = n.size * (0.7 + 0.5 * act + focusBoost + domainMatch * 0.5 + pulse + hoverBoost * 0.6);
+          lit = Math.min(1, act + focusBoost + domainMatch + hoverBoost);
+          // With a Skills tab selected, the rest of the stack recedes
+          if (domain && n.domains && !n.domains.includes(domain)) lit *= 0.6;
+        }
+
+        // On-screen radius of the node's outer shell, in half-screen-heights, so labels can sit below it
+        s.screen[i * 4 + 3] = (sc * 1.05) / (s.depth[i] * tanHalf);
+
+        s.dummy.position.copy(live[i]);
         s.dummy.rotation.set(0, 0, 0);
         s.dummy.scale.setScalar(sc * 0.5);
         s.dummy.updateMatrix();
@@ -173,9 +277,21 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
         s.dummy.updateMatrix();
         wire.setMatrixAt(i, s.dummy.matrix);
 
-        s.color.copy(n.color).multiplyScalar(DIM + (1 - DIM) * Math.min(1, act + boost));
+        s.color.copy(n.color).multiplyScalar(DIM + (1 - DIM) * lit);
         solid.setColorAt(i, s.color);
         wire.setColorAt(i, s.color);
+
+        // Label opacity for the overlay
+        let a = 0;
+        if (showLabels && n.label && s.screen[i * 4 + 2] === 1) {
+          if (n.isArch) a = unfoldOf(n.projectIndex) ** 2;
+          else {
+            a = act * act;
+            if (domain && n.domains) a *= n.domains.includes(domain) ? 1 : 0.4;
+          }
+          if (i === s.hover) a = Math.max(a, 1);
+        }
+        s.alpha[i] = a;
       }
       solid.instanceMatrix.needsUpdate = true;
       wire.instanceMatrix.needsUpdate = true;
@@ -183,18 +299,35 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       if (wire.instanceColor) wire.instanceColor.needsUpdate = true;
     }
 
-    // --- Edges: brightness follows the active cluster ---
+    // --- Edges: positions follow the live nodes, brightness follows the active cluster ---
     const ec = edgeColorRef.current;
-    if (ec) {
+    const ep = edgePosRef.current;
+    if (ec && ep) {
       const edgeColors = ec.array as Float32Array;
+      const edgePositions = ep.array as Float32Array;
       for (let i = 0; i < edges.length; i++) {
         const e = edges[i];
-        const act = e.cluster < 0 ? 0.5 : activity(e.cluster, f);
-        const k = 0.12 + 0.5 * act;
+        const a = e.aNode >= 0 ? live[e.aNode] : e.a;
+        const b = e.bNode >= 0 ? live[e.bNode] : e.b;
+        edgePositions[i * 6] = a.x;
+        edgePositions[i * 6 + 1] = a.y;
+        edgePositions[i * 6 + 2] = a.z;
+        edgePositions[i * 6 + 3] = b.x;
+        edgePositions[i * 6 + 4] = b.y;
+        edgePositions[i * 6 + 5] = b.z;
+
+        let k: number;
+        if (e.projectIndex >= 0) k = unfoldOf(e.projectIndex) ** 1.5 * 0.55;
+        else {
+          const act = e.cluster < 0 ? 0.5 : activity(e.cluster, f);
+          k = 0.12 + 0.5 * act;
+        }
+        if (s.hover >= 0 && (e.aNode === s.hover || e.bNode === s.hover)) k += 0.4;
         edgeColors[i * 6] = edgeColors[i * 6 + 3] = e.color.r * k;
         edgeColors[i * 6 + 1] = edgeColors[i * 6 + 4] = e.color.g * k;
         edgeColors[i * 6 + 2] = edgeColors[i * 6 + 5] = e.color.b * k;
       }
+      ep.needsUpdate = true;
       ec.needsUpdate = true;
     }
 
@@ -202,18 +335,34 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
     const pk = packetRef.current;
     if (pk) {
       const flow = reducedMotion ? 0.25 : 1;
+      const focusArch = focusProject >= 0 && s.unfold[focusProject] > 0.5 ? s.archEdges[focusProject] : null;
       for (let i = 0; i < packetCount; i++) {
         let e = edges[packets.edge[i]];
         packets.u[i] += (packets.speed[i] * dt * flow) / Math.max(e.length, 0.001);
         if (packets.u[i] >= 1) {
           packets.u[i] = 0;
-          packets.edge[i] = e.next >= 0 ? e.next : packets.pickEdge();
-          e = edges[packets.edge[i]];
+          let next = e.next;
+          if (next < 0) {
+            // Prefer the unfolded architecture's links so its flow is visibly alive
+            next =
+              focusArch && focusArch.length > 0 && s.rand() < 0.5
+                ? focusArch[Math.floor(s.rand() * focusArch.length)]
+                : Math.floor(s.rand() * edges.length);
+            // Skip folded architecture links: nothing to see there
+            if (edges[next].projectIndex >= 0 && unfoldOf(edges[next].projectIndex) < 0.5) {
+              next = Math.floor(s.rand() * edges.length);
+              if (edges[next].projectIndex >= 0 && unfoldOf(edges[next].projectIndex) < 0.5) next = 0;
+            }
+          }
+          packets.edge[i] = next;
+          e = edges[next];
         }
-        const act = e.cluster < 0 ? 0.6 : activity(e.cluster, f);
-        s.dummy.position.lerpVectors(e.a, e.b, packets.u[i]);
+        const a = e.aNode >= 0 ? live[e.aNode] : e.a;
+        const b = e.bNode >= 0 ? live[e.bNode] : e.b;
+        const act = e.projectIndex >= 0 ? unfoldOf(e.projectIndex) : e.cluster < 0 ? 0.6 : activity(e.cluster, f);
+        s.dummy.position.lerpVectors(a, b, packets.u[i]);
         s.dummy.rotation.set(0, 0, 0);
-        s.dummy.scale.setScalar(0.07 + 0.1 * act);
+        s.dummy.scale.setScalar(e.projectIndex >= 0 && act < 0.05 ? 0 : 0.07 + 0.1 * act);
         s.dummy.updateMatrix();
         pk.setMatrixAt(i, s.dummy.matrix);
         s.color.copy(e.color).multiplyScalar(0.35 + 0.65 * act);
@@ -221,6 +370,24 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       }
       pk.instanceMatrix.needsUpdate = true;
       if (pk.instanceColor) pk.instanceColor.needsUpdate = true;
+    }
+
+    // --- The request: a bright packet with a trail, riding the backbone just ahead of the camera ---
+    const trace = traceRef.current;
+    if (trace) {
+      const lead = Math.min(f + TRACE_LEAD, SECTION_COUNT - 1);
+      for (let k = 0; k < TRACE_COUNT; k++) {
+        backbonePoint(data, Math.max(0, lead - k * 0.05), s.dummy.position);
+        s.dummy.rotation.set(0, 0, 0);
+        const fade = 1 - k / TRACE_COUNT;
+        s.dummy.scale.setScalar(0.17 * (0.35 + 0.65 * fade) * (1 + Math.sin(t * 5) * 0.08 * motion));
+        s.dummy.updateMatrix();
+        trace.setMatrixAt(k, s.dummy.matrix);
+        s.color.copy(TRACE_COLOR).multiplyScalar(0.25 + 0.75 * fade);
+        trace.setColorAt(k, s.color);
+      }
+      trace.instanceMatrix.needsUpdate = true;
+      if (trace.instanceColor) trace.instanceColor.needsUpdate = true;
     }
 
     // --- Section signatures ---
@@ -265,7 +432,7 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       {/* Links between services */}
       <lineSegments frustumCulled={false}>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[edgePositions, 3]} />
+          <bufferAttribute ref={edgePosRef} attach="attributes-position" args={[edgePosInit, 3]} />
           <bufferAttribute ref={edgeColorRef} attach="attributes-color" args={[edgeColorInit, 3]} />
         </bufferGeometry>
         <lineBasicMaterial
@@ -296,6 +463,12 @@ export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
       {/* Data packets */}
       <instancedMesh ref={packetRef} args={[undefined, undefined, packetCount]} frustumCulled={false}>
         <icosahedronGeometry args={[1, 0]} />
+        <meshBasicMaterial toneMapped={false} />
+      </instancedMesh>
+
+      {/* The request travelling the backbone as you scroll */}
+      <instancedMesh ref={traceRef} args={[undefined, undefined, TRACE_COUNT]} frustumCulled={false}>
+        <icosahedronGeometry args={[1, 1]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
 

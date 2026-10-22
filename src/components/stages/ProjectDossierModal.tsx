@@ -3,6 +3,7 @@ import { X, ExternalLink, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-re
 import { GithubIcon } from '../common/BrandIcons';
 import { portfolioData, type Project } from '../../data/portfolio';
 import { sound } from '../universe/SoundSystem';
+import { ArchitectureDiagram } from './ArchitectureDiagram';
 import './Stages.css';
 
 interface ProjectDossierModalProps {
@@ -92,9 +93,15 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
           <p className="dossier-body">{project.solution}</p>
         </div>
 
+        {/* How the pieces fit together */}
+        <div className="dossier-section">
+          <h3 className="dossier-section-title">03 // System Flow</h3>
+          <ArchitectureDiagram projectId={project.id} />
+        </div>
+
         {/* Documented Key Capabilities */}
         <div className="dossier-section">
-          <h3 className="dossier-section-title">03 // Documented Technical Highlights</h3>
+          <h3 className="dossier-section-title">04 // Documented Technical Highlights</h3>
           <ul className="dossier-highlights-list">
             {project.highlights.map((h, idx) => (
               <li key={idx} className="dossier-highlight-item">
@@ -107,7 +114,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
 
         {/* Verified Technology Stack */}
         <div className="dossier-section">
-          <h3 className="dossier-section-title">04 // Verified Technical Architecture</h3>
+          <h3 className="dossier-section-title">05 // Verified Technology Stack</h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {project.techStack.map((tech) => (
               <span
