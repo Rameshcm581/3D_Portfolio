@@ -60,8 +60,8 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
             sound.playClick();
             onClose();
           }}
-          aria-label="Return to Exhibition"
-          title="Return to Exhibition [Esc]"
+          aria-label="Back to projects"
+          title="Back to projects [Esc]"
         >
           <X size={20} />
         </button>
@@ -139,7 +139,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
             }}
           >
             <ArrowLeft size={16} />
-            <span>RETURN TO EXHIBITION</span>
+            <span>BACK TO PROJECTS</span>
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

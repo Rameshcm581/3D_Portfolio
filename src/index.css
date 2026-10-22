@@ -348,3 +348,9 @@ a {
     opacity: 0;
   }
 }
+
+/* The universe is navigated by gesture; stop rubber-banding and pull-to-refresh fighting it */
+html,
+body {
+  overscroll-behavior-y: none;
+}

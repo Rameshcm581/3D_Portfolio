@@ -244,3 +244,14 @@
     display: flex;
   }
 }
+
+.nav-brand-title {
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .nav-brand-title {
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+  }
+}

@@ -3,6 +3,7 @@ import { ArrowRight, Layers, Sparkles } from 'lucide-react';
 import { EXHIBITION_PROJECTS } from '../../data/universeData';
 import { type SectorId } from '../../types/universe';
 import { sound } from '../universe/SoundSystem';
+import { scrollStore } from '../universe/scrollStore';
 import './Stages.css';
 
 interface ProjectsStageProps {
@@ -19,11 +20,11 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
   return (
     <div className="projects-stage-container">
       {/* Refined Exhibition Selector Dock */}
-      <section className="projects-gallery-dock" aria-label="Project Exhibition Selector">
+      <section className="projects-gallery-dock" aria-label="Project selector">
         <div className="projects-dock-header">
           <div className="projects-dock-title">
             <Sparkles size={16} color="var(--accent-gold)" />
-            <span>Spatial Project Exhibition // 5 Architectural Installations</span>
+            <span>Selected Projects<span className="dock-title-sub"> // 5 services in the mesh</span></span>
           </div>
           <button
             className="hero-btn-secondary"
@@ -40,7 +41,7 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
 
         {/* 5 Project Installation Cards in the Dock */}
         <div className="projects-cards-track">
-          {EXHIBITION_PROJECTS.map((proj) => {
+          {EXHIBITION_PROJECTS.map((proj, index) => {
             const isSelected = selectedProjectId === proj.id;
             return (
               <div
@@ -48,6 +49,18 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
                 role="button"
                 tabIndex={0}
                 className={`project-dock-card ${isSelected ? 'active' : ''}`}
+                onMouseEnter={() => {
+                  scrollStore.highlightProject = index;
+                }}
+                onMouseLeave={() => {
+                  scrollStore.highlightProject = -1;
+                }}
+                onFocus={() => {
+                  scrollStore.highlightProject = index;
+                }}
+                onBlur={() => {
+                  scrollStore.highlightProject = -1;
+                }}
                 onClick={() => {
                   sound.playClick();
                   onSelectProject(proj.id);
@@ -83,7 +96,7 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
 
                 <div className="dock-card-prompt">
                   <Layers size={13} />
-                  <span>INSPECT 3D EXHIBIT</span>
+                  <span>OPEN CASE STUDY</span>
                   <ArrowRight size={13} />
                 </div>
               </div>

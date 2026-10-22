@@ -86,7 +86,7 @@ export const ExperienceStage: React.FC<ExperienceStageProps> = ({ onNavigateSect
         </div>
       </section>
 
-      {/* Right side is open for the 3D Stepped Timeline Highway */}
+      {/* The open side leaves room for the 3D service map */}
       <div />
     </div>
   );

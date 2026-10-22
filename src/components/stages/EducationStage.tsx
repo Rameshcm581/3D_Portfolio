@@ -139,7 +139,7 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
         </div>
       </section>
 
-      {/* Right side is open for the 3D Knowledge Sanctuary Tablets */}
+      {/* The open side leaves room for the 3D service map */}
       <div />
     </div>
   );

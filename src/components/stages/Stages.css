@@ -1,26 +1,81 @@
 /* Spatially Composed Stage Overlays CSS - The Digital Engineering Universe */
 
-.stage-container {
-  position: fixed;
-  inset: 0;
+/* Sections stack in normal page flow over the fixed 3D background */
+.page-flow {
+  position: relative;
   z-index: 10;
   pointer-events: none;
+}
+
+.page-section {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 6.25rem 1.5rem 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1.5rem 2rem;
-  overflow: hidden;
 }
 
-.stage-viewport {
+.section-inner {
   width: 100%;
   max-width: 1400px;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  position: relative;
+}
+
+/* Content cards grow with the page instead of scrolling inside themselves */
+.page-section .spatial-card {
+  max-height: none;
+  overflow: visible;
+  max-width: 520px;
+}
+
+.page-section[data-side='right'] .about-stage-wrapper {
+  justify-content: flex-end;
+}
+
+.page-section .skills-stage-container,
+.page-section .projects-stage-container {
+  height: auto;
+  min-height: calc(100svh - 9.5rem);
+  gap: 2rem;
+}
+
+/* Content arrives as its section scrolls into view */
+.page-section .about-stage-wrapper,
+.page-section .hero-stage-container,
+.page-section .skills-detail-floating,
+.page-section .projects-gallery-dock {
+  animation-fill-mode: both;
+  animation-duration: 0.8s;
+  animation-name: stage-fade-in;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page-section:not(.in-view) .about-stage-wrapper,
+.page-section:not(.in-view) .hero-stage-container,
+.page-section:not(.in-view) .skills-detail-floating,
+.page-section:not(.in-view) .projects-gallery-dock {
+  animation-play-state: paused;
+}
+
+.reduced-motion .page-section .about-stage-wrapper,
+.reduced-motion .page-section .hero-stage-container,
+.reduced-motion .page-section .skills-detail-floating,
+.reduced-motion .page-section .projects-gallery-dock {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-section .about-stage-wrapper,
+  .page-section .hero-stage-container,
+  .page-section .skills-detail-floating,
+  .page-section .projects-gallery-dock {
+    animation: none;
+  }
 }
 
 /* =========================================================================
@@ -33,6 +88,8 @@
   flex-direction: column;
   align-items: center;
   pointer-events: auto;
+  position: relative;
+  isolation: isolate;
   animation: hero-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   padding: 1.5rem;
 }
@@ -46,6 +103,16 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Quiet the 3D scene directly behind the headline so the text stays legible */
+.hero-stage-container::before {
+  content: '';
+  position: absolute;
+  inset: -12% -18%;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(7, 8, 11, 0.78) 0%, rgba(7, 8, 11, 0.45) 45%, transparent 72%);
+  pointer-events: none;
 }
 
 .hero-identity-tag {
@@ -597,13 +664,76 @@
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  .stage-container {
-    padding: 4.5rem 1rem 1.5rem;
-  }
   .spatial-card {
     padding: 1.75rem 1.5rem;
   }
   .dossier-drawer {
     padding: 1.75rem 1.5rem;
+  }
+}
+
+input, textarea, button {
+  touch-action: manipulation;
+}
+
+@media (max-width: 600px) {
+  .page-section {
+    padding: 5.75rem 0.85rem 2.5rem;
+  }
+
+  .page-section .spatial-card {
+    padding: 1.25rem 1.1rem;
+    max-width: none;
+  }
+
+  /* 16px stops iOS zooming into focused fields */
+  .spatial-card input,
+  .spatial-card textarea {
+    font-size: 16px !important;
+  }
+
+  .contact-submit-label {
+    white-space: nowrap;
+    font-size: 0.82rem;
+  }
+
+  .skills-detail-floating {
+    width: 100%;
+    padding: 1.1rem 1.15rem;
+  }
+
+  .projects-dock-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .projects-dock-title {
+    font-size: 1rem;
+  }
+
+  .dock-title-sub {
+    display: none;
+  }
+
+  .project-dock-card {
+    width: 78vw;
+    max-width: 260px;
+    scroll-snap-align: start;
+  }
+
+  .projects-cards-track {
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  .dossier-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .dossier-drawer {
+    width: 100%;
+    max-height: calc(100dvh - 1.5rem);
   }
 }

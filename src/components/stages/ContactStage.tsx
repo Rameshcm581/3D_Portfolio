@@ -104,7 +104,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Backend Microservice Architecture / Automation Project"
+              placeholder="e.g. Backend architecture / Automation"
               style={{
                 width: '100%',
                 background: 'rgba(255, 255, 255, 0.04)',
@@ -148,7 +148,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
             style={{ width: '100%', justifyContent: 'center' }}
           >
             <Send size={15} />
-            <span>TRANSMIT MESSAGE (EMAIL)</span>
+            <span className="contact-submit-label">TRANSMIT MESSAGE (EMAIL)</span>
           </button>
         </form>
 
@@ -191,7 +191,7 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
         </div>
       </section>
 
-      {/* Right side is open for the 3D Quantum Transmission Beacon */}
+      {/* The open side leaves room for the 3D service map */}
       <div />
     </div>
   );

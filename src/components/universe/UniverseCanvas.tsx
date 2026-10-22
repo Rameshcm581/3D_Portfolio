@@ -1,26 +1,10 @@
-import { Suspense, Component, type ReactNode, type ErrorInfo } from 'react';
+import { Component, useState, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import * as THREE from 'three';
-import { type SectorId } from '../../types/universe';
-import { DeepSpaceBackground } from './DeepSpaceBackground';
-import { SceneLighting } from './SceneLighting';
-import { CameraRig } from './CameraRig';
-import { SectorCore } from './SectorCore';
-import { SectorAbout } from './SectorAbout';
-import { SectorSkills } from './SectorSkills';
-import { SectorProjects } from './SectorProjects';
-import { SectorExperience } from './SectorExperience';
-import { SectorEducation } from './SectorEducation';
-import { SectorContact } from './SectorContact';
+import { PerformanceMonitor } from '@react-three/drei';
+import { SystemMapScene } from './SystemMapScene';
 
 interface UniverseCanvasProps {
-  activeSectorId: SectorId;
   reducedMotion: boolean;
-  selectedSkillDomain: string | null;
-  onSelectSkillDomain: (id: string) => void;
-  selectedProjectId: string | null;
-  onSelectProject: (id: string) => void;
-  onCoordinatesUpdate?: (coords: [number, number, number]) => void;
 }
 
 interface ErrorBoundaryProps {
@@ -54,68 +38,46 @@ class WebGLErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   }
 }
 
-export function UniverseCanvas({
-  activeSectorId,
-  reducedMotion,
-  selectedSkillDomain,
-  onSelectSkillDomain,
-  selectedProjectId,
-  onSelectProject,
-  onCoordinatesUpdate,
-}: UniverseCanvasProps) {
+const isTouchDevice = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+
+const maxDpr = () => {
+  if (typeof window === 'undefined') return 1;
+  return Math.min(window.devicePixelRatio || 1, isTouchDevice() ? 1.5 : 2);
+};
+
+export function UniverseCanvas({ reducedMotion }: UniverseCanvasProps) {
+  const [lite] = useState(isTouchDevice);
+  const [dprCeiling] = useState(maxDpr);
+  const [dpr, setDpr] = useState(dprCeiling);
+
   return (
-    <div className="universe-canvas-container" style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'auto' }}>
+    <div
+      className="universe-canvas-container"
+      aria-hidden="true"
+      style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}
+    >
       <WebGLErrorBoundary
         fallback={
-          <div className="webgl-fallback-ambient" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 40%, #151a24 0%, #08090d 100%)' }} />
+          <div
+            className="webgl-fallback-ambient"
+            style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 40%, #151a24 0%, #08090d 100%)' }}
+          />
         }
       >
         <Canvas
-          camera={{ position: [0, 0, 7.2], fov: 48, near: 0.1, far: 250 }}
-          dpr={[1, typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1]}
-          gl={{
-            antialias: true,
-            powerPreference: 'high-performance',
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.2,
-          }}
+          camera={{ position: [0, 0, 0], fov: 48, near: 0.1, far: 250 }}
+          dpr={dpr}
+          gl={{ antialias: true, powerPreference: 'high-performance' }}
           style={{ width: '100%', height: '100%' }}
         >
-          {/* Deep Space Volumetric Fog */}
-          <fogExp2 attach="fog" args={['#07080b', 0.015]} />
-
-          {/* Scene Lighting Engine */}
-          <SceneLighting activeSectorId={activeSectorId} />
-
-          {/* Infinite Celestial Dust & Starfield */}
-          <DeepSpaceBackground particleCount={1000} />
-
-          {/* Camera Controller with Project Zoom-In & Organic Parallax */}
-          <CameraRig
-            activeSectorId={activeSectorId}
-            selectedProjectId={selectedProjectId}
-            reducedMotion={reducedMotion}
-            onCoordinatesUpdate={onCoordinatesUpdate}
+          <color attach="background" args={['#07080b']} />
+          {/* Drop resolution when frames get slow, restore it when there is headroom */}
+          <PerformanceMonitor
+            onDecline={() => setDpr((d) => Math.max(1, d - 0.5))}
+            onIncline={() => setDpr((d) => Math.min(dprCeiling, d + 0.5))}
           />
-
-          {/* Spatially Positioned 3D Environments */}
-          <Suspense fallback={null}>
-            <SectorCore isActive={activeSectorId === 'core'} />
-            <SectorAbout isActive={activeSectorId === 'about'} />
-            <SectorSkills
-              isActive={activeSectorId === 'skills'}
-              selectedDomain={selectedSkillDomain}
-              onSelectDomain={onSelectSkillDomain}
-            />
-            <SectorProjects
-              isActive={activeSectorId === 'projects'}
-              selectedProjectId={selectedProjectId}
-              onSelectProject={onSelectProject}
-            />
-            <SectorExperience isActive={activeSectorId === 'experience'} />
-            <SectorEducation isActive={activeSectorId === 'education'} />
-            <SectorContact isActive={activeSectorId === 'contact'} />
-          </Suspense>
+          <SystemMapScene reducedMotion={reducedMotion} lite={lite} />
         </Canvas>
       </WebGLErrorBoundary>
     </div>

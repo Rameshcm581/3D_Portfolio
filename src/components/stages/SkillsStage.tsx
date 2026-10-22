@@ -55,7 +55,7 @@ export const SkillsStage: React.FC<SkillsStageProps> = ({
             <span>TECHNOLOGY NETWORK CLUSTER</span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>
-            INTERACTIVE 3D NODES
+            TECH STACK
           </span>
         </div>
 

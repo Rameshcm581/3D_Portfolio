@@ -85,7 +85,7 @@ export const AboutStage: React.FC<AboutStageProps> = ({ onNavigateSector }) => {
         </div>
       </section>
 
-      {/* Right side is intentionally open for the 3D Holographic Portrait Monolith */}
+      {/* The open side leaves room for the 3D service map */}
       <div />
     </div>
   );
