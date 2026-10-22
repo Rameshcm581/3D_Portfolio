@@ -25,6 +25,11 @@ export const scrollStore = {
   /** Skills tab currently selected, so matching nodes light up */
   skillDomain: null as string | null,
 
+  /** performance.now() of the last scroll / pointer / touch input, so the renderer knows when the visitor is interacting */
+  lastInput: 0,
+  /** Set by the scene: true while the camera, parallax or an unfold is still moving */
+  camMoving: false,
+
   // Written by the scene each frame, read by the DOM overlay
   /** Index of the mesh node under the pointer, or -1 */
   hoverNode: -1,

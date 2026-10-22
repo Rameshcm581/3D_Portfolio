@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { type SectorId, SECTORS } from '../../types/universe';
-import { UniverseCanvas } from './UniverseCanvas';
+
 import { UniverseNav } from '../navigation/UniverseNav';
 import { HeroStage } from '../stages/HeroStage';
 import { AboutStage } from '../stages/AboutStage';
@@ -15,6 +15,9 @@ import { MeshOverlay } from './MeshOverlay';
 import { describeNode } from './meshInteraction';
 import { EXHIBITION_PROJECTS } from '../../data/universeData';
 import { applyTheme, currentTheme, savedTheme, systemTheme, type Theme } from '../../theme';
+
+// The 3D scene (three.js + react-three-fiber, the bulk of the bundle) loads after the page has painted
+const UniverseCanvas = lazy(() => import('./UniverseCanvas').then((m) => ({ default: m.UniverseCanvas })));
 
 // Which side of a section the content card sits on, leaving the other side open for the 3D scene
 const SIDES: Partial<Record<SectorId, 'right'>> = { experience: 'right' };
@@ -109,6 +112,7 @@ export const UniverseExperience: React.FC = () => {
     };
 
     const schedule = () => {
+      scrollStore.lastInput = performance.now();
       if (!frame) frame = requestAnimationFrame(update);
     };
 
@@ -150,6 +154,7 @@ export const UniverseExperience: React.FC = () => {
       (t instanceof HTMLElement && t.classList.contains('universe-experience-root'));
 
     const track = (e: PointerEvent) => {
+      scrollStore.lastInput = performance.now();
       scrollStore.pointerX = (e.clientX / window.innerWidth) * 2 - 1;
       scrollStore.pointerY = -((e.clientY / window.innerHeight) * 2 - 1);
       scrollStore.pointerActive = isEmptySpace(e.target);
@@ -254,7 +259,9 @@ export const UniverseExperience: React.FC = () => {
       </a>
 
       {/* Fixed 3D background: the camera travels the service map as you scroll */}
-      <UniverseCanvas reducedMotion={reducedMotion} theme={theme} />
+      <Suspense fallback={null}>
+        <UniverseCanvas reducedMotion={reducedMotion} theme={theme} paused={selectedProjectId !== null} />
+      </Suspense>
       <MeshOverlay activeIndex={SECTORS.findIndex((s) => s.id === activeSectorId)} />
 
       <UniverseNav

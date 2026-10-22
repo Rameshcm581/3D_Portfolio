@@ -63,8 +63,10 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
           aria-label="Ramesh C - Return to Engineering Core"
         >
           <img
-            src="/images/ramesh-logo-cropped.png"
+            src="/images/ramesh-logo-96.webp"
             alt="Ramesh C Logo"
+            width={32}
+            height={32}
             className="nav-brand-logo"
           />
           <div className="nav-brand-text">

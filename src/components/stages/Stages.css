@@ -215,8 +215,8 @@
   background: rgb(var(--panel-raised-rgb) / 0.7);
   color: var(--text-primary);
   border: 1px solid rgb(var(--ink-rgb) / 0.15);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-family: var(--font-sans);
   font-size: 0.92rem;
   font-weight: 600;
@@ -245,7 +245,7 @@
 
 .hero-tech-tag {
   background: rgb(var(--panel-rgb) / 0.75);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   border: 1px solid rgb(var(--ink-rgb) / 0.08);
   padding: 0.35rem 0.75rem;
   border-radius: 8px;
@@ -289,8 +289,8 @@
 
 .spatial-card {
   background: rgb(var(--panel-rgb) / 0.82);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgb(var(--ink-rgb) / 0.1);
   border-radius: 20px;
   padding: 2rem 2.25rem;
@@ -399,8 +399,8 @@
 
 .skill-domain-tab {
   background: rgb(var(--panel-rgb) / 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgb(var(--ink-rgb) / 0.1);
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -431,8 +431,8 @@
   max-width: 620px;
   width: 90%;
   background: rgb(var(--panel-rgb) / 0.88);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgb(var(--gold-rgb) / 0.35);
   border-radius: 20px;
   padding: 1.5rem 2rem;
@@ -494,8 +494,8 @@
 
 .project-dock-card {
   background: rgb(var(--panel-rgb) / 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgb(var(--ink-rgb) / 0.1);
   border-radius: 14px;
   padding: 0.95rem 1.1rem;
@@ -558,8 +558,8 @@
   inset: 0;
   z-index: 60;
   background: rgb(var(--scrim-rgb) / 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -574,8 +574,8 @@
 
 .dossier-drawer {
   background: rgb(var(--panel-rgb) / 0.96);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--gold-rgb) / 0.35);
   border-radius: 24px;
   width: min(760px, 92vw);
@@ -837,8 +837,8 @@ input, textarea, button {
   padding: 0.38rem 0.85rem 0.5rem;
   border-radius: 9999px;
   background: rgb(var(--panel-rgb) / 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgb(var(--ink-rgb) / 0.1);
   font-family: var(--font-mono);
   font-size: 0.68rem;
