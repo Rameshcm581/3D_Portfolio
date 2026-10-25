@@ -2,7 +2,6 @@ import React from 'react';
 import { Award, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { portfolioData } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './Stages.css';
 
 interface EducationStageProps {
@@ -129,7 +128,6 @@ export const EducationStage: React.FC<EducationStageProps> = ({ onNavigateSector
           <button
             className="hero-btn-primary"
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('contact');
             }}
           >

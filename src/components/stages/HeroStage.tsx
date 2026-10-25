@@ -2,7 +2,6 @@ import React from 'react';
 import { ArrowRight, Compass, MessageSquare } from 'lucide-react';
 import { portfolioData } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './Stages.css';
 
 interface HeroStageProps {
@@ -45,7 +44,6 @@ export const HeroStage: React.FC<HeroStageProps> = ({ onNavigateSector }) => {
         <button
           className="hero-btn-primary"
           onClick={() => {
-            sound.playWarp();
             onNavigateSector('projects');
           }}
         >
@@ -56,7 +54,6 @@ export const HeroStage: React.FC<HeroStageProps> = ({ onNavigateSector }) => {
         <button
           className="hero-btn-secondary"
           onClick={() => {
-            sound.playWarp();
             onNavigateSector('contact');
           }}
         >

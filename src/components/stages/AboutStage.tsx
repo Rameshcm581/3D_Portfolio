@@ -2,7 +2,6 @@ import React from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { portfolioData } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './Stages.css';
 
 interface AboutStageProps {
@@ -75,7 +74,6 @@ export const AboutStage: React.FC<AboutStageProps> = ({ onNavigateSector }) => {
           <button
             className="hero-btn-primary"
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('skills');
             }}
           >

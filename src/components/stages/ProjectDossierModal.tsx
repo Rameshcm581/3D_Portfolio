@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { X, ExternalLink, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { GithubIcon } from '../common/BrandIcons';
 import { portfolioData, type Project } from '../../data/portfolio';
-import { sound } from '../universe/SoundSystem';
 import { ArchitectureDiagram } from './ArchitectureDiagram';
 import './Stages.css';
 
@@ -37,7 +36,6 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        sound.playClick();
         onClose();
       }
     };
@@ -58,7 +56,6 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
         <button
           className="dossier-close-btn"
           onClick={() => {
-            sound.playClick();
             onClose();
           }}
           aria-label="Back to projects"
@@ -141,7 +138,6 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({ projec
             className="hero-btn-secondary"
             style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
             onClick={() => {
-              sound.playClick();
               onClose();
             }}
           >

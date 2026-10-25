@@ -2,7 +2,6 @@ import React from 'react';
 import { ArrowRight, Layers, Sparkles } from 'lucide-react';
 import { EXHIBITION_PROJECTS } from '../../data/universeData';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import { scrollStore } from '../universe/scrollStore';
 import './Stages.css';
 
@@ -30,7 +29,6 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
             className="hero-btn-secondary"
             style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('experience');
             }}
           >
@@ -62,12 +60,10 @@ export const ProjectsStage: React.FC<ProjectsStageProps> = ({
                   scrollStore.highlightProject = -1;
                 }}
                 onClick={() => {
-                  sound.playClick();
                   onSelectProject(proj.id);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    sound.playClick();
                     onSelectProject(proj.id);
                   }
                 }}

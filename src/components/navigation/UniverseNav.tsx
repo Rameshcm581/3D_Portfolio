@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Eye, Menu, X, ArrowRight, Sun, Moon } from 'lucide-react';
-import { type Theme } from '../../theme';
+import { Eye, Menu, X, ArrowRight } from 'lucide-react';
 import { SECTORS, type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './UniverseNav.css';
 
 interface UniverseNavProps {
@@ -10,8 +8,6 @@ interface UniverseNavProps {
   onNavigateSector: (id: SectorId) => void;
   reducedMotion: boolean;
   onToggleReducedMotion: () => void;
-  theme: Theme;
-  onToggleTheme: () => void;
 }
 
 export const UniverseNav: React.FC<UniverseNavProps> = ({
@@ -19,17 +15,8 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
   onNavigateSector,
   reducedMotion,
   onToggleReducedMotion,
-  theme,
-  onToggleTheme,
 }) => {
-  const [isMuted, setIsMuted] = useState(sound.getMuted());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const toggleSound = () => {
-    const next = !isMuted;
-    setIsMuted(next);
-    sound.setMuted(next);
-  };
 
   // Keyboard navigation shortcuts
   useEffect(() => {
@@ -40,7 +27,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
       const num = parseInt(e.key, 10);
       if (num >= 1 && num <= SECTORS.length) {
         e.preventDefault();
-        sound.playWarp();
         onNavigateSector(SECTORS[num - 1].id);
       }
     };
@@ -57,7 +43,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
           className="nav-brand"
           onClick={(e) => {
             e.preventDefault();
-            sound.playClick();
             onNavigateSector('core');
           }}
           aria-label="Ramesh C - Return to Engineering Core"
@@ -85,7 +70,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
                   role="menuitem"
                   className={`nav-link-btn ${isActive ? 'active' : ''}`}
                   onClick={() => {
-                    sound.playClick();
                     onNavigateSector(sector.id);
                   }}
                   aria-current={isActive ? 'page' : undefined}
@@ -99,26 +83,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
 
         {/* Right Utility Actions */}
         <div className="nav-actions">
-          {/* Light / Dark Theme Toggle */}
-          <button
-            className="nav-icon-btn"
-            onClick={onToggleTheme}
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-
-          {/* Sound Toggle */}
-          <button
-            className={`nav-icon-btn ${!isMuted ? 'active' : ''}`}
-            onClick={toggleSound}
-            title={isMuted ? 'Enable Audio Synthesizer' : 'Mute Audio Synthesizer'}
-            aria-label={isMuted ? 'Enable Audio' : 'Mute Audio'}
-          >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
-
           {/* Reduced Motion Toggle */}
           <button
             className={`nav-icon-btn ${reducedMotion ? 'active' : ''}`}
@@ -133,7 +97,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
           <button
             className="nav-cta-btn"
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('contact');
             }}
           >
@@ -163,7 +126,6 @@ export const UniverseNav: React.FC<UniverseNavProps> = ({
                 role="menuitem"
                 className={`nav-mobile-item ${isActive ? 'active' : ''}`}
                 onClick={() => {
-                  sound.playClick();
                   onNavigateSector(sector.id);
                   setMobileMenuOpen(false);
                 }}

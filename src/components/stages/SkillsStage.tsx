@@ -3,7 +3,6 @@ import { ArrowRight, CheckCircle2, Cpu } from 'lucide-react';
 import { SKILL_DOMAINS } from '../../data/universeData';
 import { portfolioData, type SkillCategory } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './Stages.css';
 
 interface SkillsStageProps {
@@ -37,7 +36,6 @@ export const SkillsStage: React.FC<SkillsStageProps> = ({
               aria-selected={isSelected}
               className={`skill-domain-tab ${isSelected ? 'active' : ''}`}
               onClick={() => {
-                sound.playClick();
                 onSelectDomain(domain.id);
               }}
             >
@@ -99,7 +97,6 @@ export const SkillsStage: React.FC<SkillsStageProps> = ({
             className="hero-btn-primary"
             style={{ padding: '0.65rem 1.4rem', fontSize: '0.85rem' }}
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('projects');
             }}
           >

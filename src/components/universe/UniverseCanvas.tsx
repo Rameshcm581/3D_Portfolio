@@ -1,12 +1,10 @@
 import { Component, useEffect, useRef, useState, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { SystemMapScene } from './SystemMapScene';
-import { type Theme } from '../../theme';
 import { scrollStore } from './scrollStore';
 
 interface UniverseCanvasProps {
   reducedMotion: boolean;
-  theme: Theme;
   /** Stop rendering entirely (e.g. while a modal covers the scene) */
   paused: boolean;
 }
@@ -110,7 +108,7 @@ function FrameGovernor({
   return null;
 }
 
-export function UniverseCanvas({ reducedMotion, theme, paused }: UniverseCanvasProps) {
+export function UniverseCanvas({ reducedMotion, paused }: UniverseCanvasProps) {
   const [lite] = useState(isTouchDevice);
   const [dprCeiling] = useState(maxDpr);
   const [dpr, setDpr] = useState(dprCeiling);
@@ -142,7 +140,7 @@ export function UniverseCanvas({ reducedMotion, theme, paused }: UniverseCanvasP
             onSlow={() => setDpr((d) => Math.max(1, d - 0.5))}
             onFast={() => setDpr((d) => Math.min(dprCeiling, d + 0.5))}
           />
-          <SystemMapScene reducedMotion={reducedMotion} lite={lite} theme={theme} />
+          <SystemMapScene reducedMotion={reducedMotion} lite={lite} />
         </Canvas>
       </WebGLErrorBoundary>
     </div>

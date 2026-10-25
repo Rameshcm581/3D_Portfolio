@@ -12,12 +12,10 @@ import {
 } from './systemMap';
 import { scrollStore, toNodeInfo } from './scrollStore';
 import { EXHIBITION_PROJECTS } from '../../data/universeData';
-import { type Theme } from '../../theme';
 
 interface SystemMapSceneProps {
   reducedMotion: boolean;
   lite: boolean;
-  theme: Theme;
 }
 
 const BASE_FOV = 48;
@@ -28,50 +26,14 @@ const TRACE_LEAD = 0.22; // how far ahead of the camera the request packet trave
 const NEAR_NODES = 2;
 const NEAR_EDGES = 1.3;
 
-// Dark mode glows: additive blending, colours dimmed toward black. Light mode can't glow on a
-// pale background, so it uses opaque blending with deeper colours faded toward the background.
-interface Palette {
-  bgHex: string;
-  bg: THREE.Color;
-  gold: THREE.Color;
-  cyan: THREE.Color;
-  trace: THREE.Color;
-  starColor: string;
-  starOpacity: number;
-  wireOpacity: number;
-  /** Resting brightness of an inactive node (0..1) */
-  dim: number;
-  additive: boolean;
-  fog: number;
-}
-const PALETTES: Record<Theme, Palette> = {
-  dark: {
-    bgHex: '#07080b',
-    bg: new THREE.Color('#07080b'),
-    gold: GOLD,
-    cyan: CYAN,
-    trace: new THREE.Color('#fff1c1'),
-    starColor: '#9fb6d6',
-    starOpacity: 0.65,
-    wireOpacity: 0.55,
-    dim: 0.22,
-    additive: true,
-    fog: 0.011,
-  },
-  light: {
-    bgHex: '#eef1f6',
-    bg: new THREE.Color('#eef1f6'),
-    gold: new THREE.Color('#a87a12'),
-    cyan: new THREE.Color('#0284c7'),
-    trace: new THREE.Color('#b45309'),
-    starColor: '#64748b',
-    starOpacity: 0.3,
-    wireOpacity: 0.75,
-    dim: 0.34,
-    additive: false,
-    fog: 0.006,
-  },
-};
+// Colours are dimmed toward black and blended additively, so nodes and links glow on the dark background
+const BG_HEX = '#07080b';
+const TRACE_COLOR = new THREE.Color('#fff1c1');
+const STAR_COLOR = '#9fb6d6';
+const STAR_OPACITY = 0.65;
+const WIRE_OPACITY = 0.55;
+const DIM = 0.22; // resting brightness of an inactive node
+const FOG = 0.011;
 const PROJECT_COUNT = EXHIBITION_PROJECTS.length;
 
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
@@ -164,8 +126,8 @@ interface Sim {
   parY: number;
   fov: number;
   ready: boolean;
-  /** Theme the buffers were last fully written for; a change forces a full rewrite */
-  theme: Theme | null;
+  /** False until the first frame has written every buffer, including the parts normally skipped */
+  primed: boolean;
 }
 
 function createSim(data: SystemMapData, packetCount: number): Sim {
@@ -204,7 +166,7 @@ function createSim(data: SystemMapData, packetCount: number): Sim {
     parY: 0,
     fov: BASE_FOV,
     ready: false,
-    theme: null,
+    primed: false,
   };
   // Hand the overlay (labels, tooltip) everything it needs to read each frame
   scrollStore.nodeInfo = nodes.map(toNodeInfo);
@@ -214,9 +176,7 @@ function createSim(data: SystemMapData, packetCount: number): Sim {
   return sim;
 }
 
-export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapSceneProps) {
-  const pal = PALETTES[theme];
-  const blending = pal.additive ? THREE.AdditiveBlending : THREE.NormalBlending;
+export function SystemMapScene({ reducedMotion, lite }: SystemMapSceneProps) {
   const size = useThree((s) => s.size);
   const portrait = size.width / size.height < 1;
   const data = useMemo(() => buildSystemMap({ portrait }), [portrait]);
@@ -267,14 +227,12 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
     }
     const s = simRef.current;
     const { packets, live } = s;
-    // First frame, or the theme changed: rewrite everything, including parts normally skipped
-    const full = s.theme !== theme;
-    s.theme = theme;
+    // First frame: write everything, including the parts that are normally skipped when far away
+    const full = !s.primed;
+    s.primed = true;
 
-    // Theme helpers: map a mesh colour to this theme, and fade it by `amount` (0 = invisible)
-    const base = (c: THREE.Color) => (c === GOLD ? pal.gold : pal.cyan);
-    const shade = (out: THREE.Color, from: THREE.Color, amount: number) =>
-      pal.additive ? out.copy(from).multiplyScalar(amount) : out.copy(pal.bg).lerp(from, Math.min(1, amount));
+    // Fade a colour toward black by `amount` (0 = invisible)
+    const shade = (out: THREE.Color, from: THREE.Color, amount: number) => out.copy(from).multiplyScalar(amount);
 
     // --- Camera: follow smoothed scroll progress along the path ---
     const target = THREE.MathUtils.clamp(scrollStore.progress, 0, SECTION_COUNT - 1);
@@ -422,7 +380,7 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
         const sx = sa * s.phaseCos[i] + ca * s.phaseSin[i];
         writeSpinMatrix(wireM, i, wp.x, wp.y, wp.z, sc * 1.05, cx, sx, cy, sy);
 
-        shade(s.color, base(n.color), pal.dim + (1 - pal.dim) * lit);
+        shade(s.color, n.color, DIM + (1 - DIM) * lit);
         solidC[i * 3] = wireC[i * 3] = s.color.r;
         solidC[i * 3 + 1] = wireC[i * 3 + 1] = s.color.g;
         solidC[i * 3 + 2] = wireC[i * 3 + 2] = s.color.b;
@@ -483,7 +441,7 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
           k = 0.12 + 0.5 * act;
         }
         if (s.hover >= 0 && (e.aNode === s.hover || e.bNode === s.hover)) k += 0.4;
-        shade(s.color, base(e.color), pal.additive ? k : k * 1.3);
+        shade(s.color, e.color, k);
         edgeColors[i * 6] = edgeColors[i * 6 + 3] = s.color.r;
         edgeColors[i * 6 + 1] = edgeColors[i * 6 + 4] = s.color.g;
         edgeColors[i * 6 + 2] = edgeColors[i * 6 + 5] = s.color.b;
@@ -501,7 +459,6 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
       const pkC = pk.instanceColor!.array as Float32Array;
       const flow = reducedMotion ? 0.25 : 1;
       const focusArch = focusProject >= 0 && s.ufe[focusProject] > 0.5 ? s.archEdges[focusProject] : null;
-      const sizeK = pal.additive ? 1 : 0.7;
       for (let i = 0; i < packetCount; i++) {
         let e = edges[packets.edge[i]];
         packets.u[i] += (packets.speed[i] * dt * flow) / Math.max(e.length, 0.001);
@@ -536,9 +493,9 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
           a.x + (b.x - a.x) * w,
           a.y + (b.y - a.y) * w,
           a.z + (b.z - a.z) * w,
-          (isArch && act < 0.05 ? 0 : 0.07 + 0.1 * act) * sizeK
+          isArch && act < 0.05 ? 0 : 0.07 + 0.1 * act
         );
-        shade(s.color, base(e.color), 0.35 + 0.65 * act);
+        shade(s.color, e.color, 0.35 + 0.65 * act);
         pkC[i * 3] = s.color.r;
         pkC[i * 3 + 1] = s.color.g;
         pkC[i * 3 + 2] = s.color.b;
@@ -565,7 +522,7 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
           s.tmp.z,
           0.17 * (0.35 + 0.65 * fade) * (1 + Math.sin(t * 5) * 0.08 * motion)
         );
-        shade(s.color, pal.trace, 0.25 + 0.75 * fade);
+        shade(s.color, TRACE_COLOR, 0.25 + 0.75 * fade);
         trC[k * 3] = s.color.r;
         trC[k * 3 + 1] = s.color.g;
         trC[k * 3 + 2] = s.color.b;
@@ -604,8 +561,8 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
 
   return (
     <>
-      <color attach="background" args={[pal.bgHex]} />
-      <fogExp2 attach="fog" args={[pal.bgHex, pal.fog]} />
+      <color attach="background" args={[BG_HEX]} />
+      <fogExp2 attach="fog" args={[BG_HEX, FOG]} />
 
       {/* Distant stars along the whole route */}
       <points>
@@ -614,12 +571,12 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
         </bufferGeometry>
         <pointsMaterial
           size={0.14}
-          color={pal.starColor}
+          color={STAR_COLOR}
           transparent
-          opacity={pal.starOpacity}
+          opacity={STAR_OPACITY}
           sizeAttenuation
           depthWrite={false}
-          blending={blending}
+          blending={THREE.AdditiveBlending}
         />
       </points>
 
@@ -629,7 +586,7 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
           <bufferAttribute ref={edgePosRef} attach="attributes-position" args={[edgePosInit, 3]} />
           <bufferAttribute ref={edgeColorRef} attach="attributes-color" args={[edgeColorInit, 3]} />
         </bufferGeometry>
-        <lineBasicMaterial vertexColors transparent depthWrite={false} blending={blending} />
+        <lineBasicMaterial vertexColors transparent depthWrite={false} blending={THREE.AdditiveBlending} />
       </lineSegments>
 
       {/* Service nodes: a solid core inside a slowly turning wire shell */}
@@ -642,10 +599,10 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
         <meshBasicMaterial
           wireframe
           transparent
-          opacity={pal.wireOpacity}
+          opacity={WIRE_OPACITY}
           depthWrite={false}
           toneMapped={false}
-          blending={blending}
+          blending={THREE.AdditiveBlending}
         />
       </instancedMesh>
 
@@ -665,13 +622,13 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
       <mesh ref={coreShellRef} position={coreHub}>
         <icosahedronGeometry args={[2.6, 1]} />
         <meshBasicMaterial
-          color={pal.gold}
+          color={GOLD}
           wireframe
           transparent
           opacity={0.4}
           depthWrite={false}
           toneMapped={false}
-          blending={blending}
+          blending={THREE.AdditiveBlending}
         />
       </mesh>
 
@@ -687,12 +644,12 @@ export function SystemMapScene({ reducedMotion, lite, theme }: SystemMapScenePro
         >
           <torusGeometry args={[1, 0.012, 8, 96]} />
           <meshBasicMaterial
-            color={pal.cyan}
+            color={CYAN}
             transparent
             opacity={0}
             depthWrite={false}
             toneMapped={false}
-            blending={blending}
+            blending={THREE.AdditiveBlending}
           />
         </mesh>
       ))}

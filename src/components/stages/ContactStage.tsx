@@ -3,7 +3,6 @@ import { Mail, Copy, Check, Send, RotateCcw } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '../common/BrandIcons';
 import { portfolioData } from '../../data/portfolio';
 import { type SectorId } from '../../types/universe';
-import { sound } from '../universe/SoundSystem';
 import './Stages.css';
 
 interface ContactStageProps {
@@ -17,7 +16,6 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
   const [message, setMessage] = useState('');
 
   const handleCopyEmail = () => {
-    sound.playClick();
     navigator.clipboard.writeText(personal.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -25,7 +23,6 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
 
   const handleDirectSend = (e: React.FormEvent) => {
     e.preventDefault();
-    sound.playClick();
     const mailtoUrl = `mailto:${personal.email}?subject=${encodeURIComponent(
       subject.trim() || 'Software Engineering Project Enquiry'
     )}&body=${encodeURIComponent(message.trim())}`;
@@ -181,7 +178,6 @@ export const ContactStage: React.FC<ContactStageProps> = ({ onNavigateSector }) 
             className="hero-btn-secondary"
             style={{ padding: '0.55rem 1rem', fontSize: '0.8rem' }}
             onClick={() => {
-              sound.playWarp();
               onNavigateSector('core');
             }}
           >
